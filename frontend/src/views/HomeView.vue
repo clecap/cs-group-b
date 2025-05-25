@@ -19,7 +19,7 @@ import BaseLayout from '../layouts/BaseLayout.vue';
         </RouterLink>
 
         <RouterLink
-          to="/verify"
+          to="/victor"
           class="border border-black rounded-xl p-3 flex items-center  hover:bg-gray-100 transition"
         >
           <span>Verify as Victor</span>

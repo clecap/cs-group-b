@@ -9,6 +9,30 @@ const router = createRouter({
       name: 'home',
       component: HomeView,
     },
+    // {
+    //   path: '/register',
+    //   name: 'register',
+    //   // route level code-splitting
+    //   // this generates a separate chunk (About.[hash].js) for this route
+    //   // which is lazy-loaded when the route is visited.
+    //   component: () => import('../views/Register.vue'),
+    // },
+    // {
+    //   path: '/peggy',
+    //   name: 'peggy',
+    //   // route level code-splitting
+    //   // this generates a separate chunk (About.[hash].js) for this route
+    //   // which is lazy-loaded when the route is visited.
+    //   component: () => import('../views/Peggy.vue'),
+    // },
+    // {
+    //   path: '/victor',
+    //   name: 'victor',
+    //   // route level code-splitting
+    //   // this generates a separate chunk (About.[hash].js) for this route
+    //   // which is lazy-loaded when the route is visited.
+    //   component: () => import('../views/Vctor.vue'),
+    // },
   ],
 })
 
