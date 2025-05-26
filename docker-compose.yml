@@ -11,4 +11,4 @@ services:
     depends_on:
       backend:
         condition: service_started
-      # can provide healthcheck in the backend image and provide condition in this image in future
+      # can provide healthcheck in the backend image and provide service_healthy condition check in this image in future
