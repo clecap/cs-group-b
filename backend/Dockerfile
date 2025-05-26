@@ -20,7 +20,7 @@ RUN poetry install
 COPY ./app.py .
 
 # define the port number the container should expose
-EXPOSE 8000
+EXPOSE 5000
 
 # run the command
-CMD ["poetry","run","flask", "run","-h","0.0.0.0","-p","8000"]
+CMD ["poetry","run","flask", "run","-h","0.0.0.0"]

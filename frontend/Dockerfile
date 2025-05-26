@@ -23,6 +23,6 @@ RUN npm install -g serve
 
 COPY --from=build /usr/src/app/dist .
 
-EXPOSE 8001
+EXPOSE 5000
 
-CMD ["serve", "-s", ".", "-l", "8001"]
+CMD ["serve", "-s", ".", "-l", "5000"]
