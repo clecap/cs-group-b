@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Peggy's view</title>
+    <script src="//cdn.socket.io/4.6.1/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Peggy's View</h1>
+    <div>
+        <label>Enter Public Keys:</label>
+        <input id="publicKeys" />
+        <button onclick="sendPublicKeys()">Publish</button>
+        <p id="informPublicKeysHaveBeenPublished"></p>
+    </div>
+
+    <script>
+        const socket = io();
+
+        function sendPublicKeys() {
+            const keys = document.getElementById("publicKeys").value.split(",");
+            socket.emit('publish_public_keys', { public_keys: keys });
+
+            document.getElementById("informPublicKeysHaveBeenPublished").innerText = "Public Keys Have Been Published";
+        }
+
+    </script>
+</body>
+</html>

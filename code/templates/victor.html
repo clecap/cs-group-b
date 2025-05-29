@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Victor's view</title>
+    <script src="//cdn.socket.io/4.6.1/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Victor's view</h1>
+
+    <p id="receivedPublicKeys"></p>
+
+    <script>
+        const socket = io();
+
+        socket.on('public_keys_received', data => {
+            document.getElementById("receivedPublicKeys").innerText =
+                "Received public keys: " + data.public_keys.join(", ");
+        });
+
+    </script>
+</body>
+</html>
