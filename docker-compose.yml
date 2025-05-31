@@ -5,7 +5,7 @@ services:
       - "8000:5000"
 
   frontend:
-    build: /frontend
+    build: ./frontend
     ports:
       - "8001:5000"
     depends_on:
