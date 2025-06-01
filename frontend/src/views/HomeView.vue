@@ -1,29 +1,35 @@
 <script setup>
 import BaseLayout from '../layouts/BaseLayout.vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+const navigateToVictor = () => {
+  router.push('/victor');
+};
 </script>
 
 <template>
   <BaseLayout>
     <template #header>
-      <h1 class="text-2xl font-bold text-center">Faige-Fiat-Shamir Demo</h1>
+      <h1 class="text-2xl font-bold text-center">Feige-Fiat-Shamir Demo</h1>
       <h4 class="text-lg font-medium text-center mt-10">Select a role to begin</h4>
     </template>
 
-   <template #default>
-      <div class="flex flex-col items-center mt-10 space-y-6 h-100">
-        <RouterLink
-          to="/register"
-          class="border border-black rounded-xl p-3 flex items-center  hover:bg-gray-100 transition"
-        >
+    <template #default>
+      <div class="flex flex-col items-center mt-10 space-y-6">
+        <!-- Peggy button is deactivated, because there is no functionality (at the moment) -->
+        <div class="border border-gray-300 rounded-xl p-3 flex items-center bg-gray-100 text-gray-500 cursor-not-allowed w-48 justify-center">
           <span>Register as Peggy</span>
-        </RouterLink>
+        </div>
 
-        <RouterLink
-          to="/victor"
-          class="border border-black rounded-xl p-3 flex items-center  hover:bg-gray-100 transition"
+        <!-- Victor button -->
+        <button
+          @click="navigateToVictor"
+          class="border border-black rounded-xl p-3 flex items-center hover:bg-gray-100 transition cursor-pointer w-48 justify-center"
         >
           <span>Verify as Victor</span>
-        </RouterLink>
+        </button>
       </div>
     </template>
   </BaseLayout>
