@@ -1,0 +1,14 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:5000"
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8001:5000"
+    depends_on:
+      backend:
+        condition: service_started
+      # can provide healthcheck in the backend image and provide service_healthy condition check in this image in future
