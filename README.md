@@ -30,8 +30,6 @@ This project utilizes Docker Compose to easily run both the backend and frontend
     git clone https://github.com/clecap/cs-group-b.git
     cd cs-group-b
     ```
-    Right now this code is in different branch so technically the above command will not work but if eventually we do merge then it should.
-
 2.  **Start the services using Docker Compose:**
     ```bash
     docker compose up
