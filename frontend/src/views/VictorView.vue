@@ -7,6 +7,19 @@ const router = useRouter();
 const goHome = () => {
   router.push('/');
 };
+
+import { ref, onMounted } from 'vue';
+import { io } from 'socket.io-client';
+
+const receivedKeysMessage = ref('Public keys t₁, t₂, t₃ = xxxx, xxxx, xxxx');
+let socket;
+
+onMounted(() => {
+  socket = io();
+  socket.on('public_keys_received', (data) => {
+    receivedKeysMessage.value = 'Received public keys: ' + data.public_keys.join(', ');
+  });
+});
 </script>
 
 <template>
@@ -21,7 +34,7 @@ const goHome = () => {
         <div class="space-y-2">
           <div class="text-gray-700">Waiting for public keys.......</div>
           <div class="font-mono text-sm">
-            Public keys t₁, t₂, t₃ = xxxx, xxxx, xxxx
+            <p>{{ receivedKeysMessage }}</p>
           </div>
         </div>
 
