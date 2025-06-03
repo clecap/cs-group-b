@@ -1,5 +1,4 @@
-# first stage
-FROM node:24 AS build
+FROM node:24
 
 WORKDIR /usr/src/app
 
@@ -10,19 +9,6 @@ RUN npm install
 
 COPY . .
 
-# create the dist folder
-RUN npm run build
+EXPOSE 5173
 
-# final stage
-FROM node:24
-
-WORKDIR /usr/src/app
-
-# using serve as the static server 
-RUN npm install -g serve
-
-COPY --from=build /usr/src/app/dist .
-
-EXPOSE 5000
-
-CMD ["serve", "-s", ".", "-l", "5000"]
+CMD ["npm", "run", "dev"]

@@ -7,8 +7,15 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - "8001:5000"
+      - "8001:5173"
     depends_on:
       backend:
         condition: service_started
       # can provide healthcheck in the backend image and provide service_healthy condition check in this image in future
+    develop:
+      watch:
+        - action: rebuild
+          path: ./frontend/package.json
+        - action: sync
+          path: ./frontend
+          target: /usr/src/app
