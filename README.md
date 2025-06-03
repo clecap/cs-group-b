@@ -32,10 +32,10 @@ This project utilizes Docker Compose to easily run both the backend and frontend
     ```
 2.  **Start the services using Docker Compose:**
     ```bash
-    docker compose up
+    docker compose -f docker-compose-prod.yml up --build
     ```
 
-    This command will build the Docker images for the backend and frontend (if they haven't been built before) and then start the containers defined in the `docker-compose.yml` file.
+    This command will build the Docker images for the backend and frontend (if they haven't been built before) and then start the containers defined in the `docker-compose-prod.yml` file.
 
 ### Accessing the Application
 
