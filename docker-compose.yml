@@ -3,6 +3,13 @@ services:
     build: ./backend
     ports:
       - "8000:5000"
+    environment:
+        FLASK_DEBUG : True
+    develop:
+      watch:
+        - action: sync
+          path: ./backend
+          target: /usr/src/app 
 
   frontend:
     build: ./frontend
