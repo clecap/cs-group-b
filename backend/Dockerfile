@@ -15,9 +15,7 @@ ENV PATH="${PATH}:/root/.local/bin"
 # install dependencies
 RUN poetry install
 
-# copy only whats needed or delete '.venv' since for reasons I am not sure about it messes up the environment
-# if copy list becomes too long then can also use dockerignore file
-COPY ./app.py .
+COPY . .
 
 # define the port number the container should expose
 EXPOSE 5000
