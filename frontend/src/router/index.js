@@ -14,6 +14,21 @@ const router = createRouter({
       name: 'victor',
       component: () => import('../views/VictorView.vue'),
     },
+    {
+      path: '/peggy-existing',
+      name: 'PeggyExisting',
+      component: () => import('../views/PeggyView_ExistingUser.vue'),
+    },
+    {
+      path: '/peggy-register',
+      name: 'PeggyRegister',
+      component: () => import('../views/PeggyView_RegisterAsPeggy.vue')
+    },
+    {
+      path: '/peggy-user',
+      name: 'PeggyUser',
+      component: () => import('../views/PeggyView_User.vue')
+    }
   ],
 })
 
