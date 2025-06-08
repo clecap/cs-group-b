@@ -1,0 +1,84 @@
+openapi: 3.0.4
+info:
+  title: Fiege Fiat Shamir SOSE25 (Group B)
+  description: |-
+    This is the api reference doc for the Frontend and Backend team :}
+  version: 1.0.0
+tags:
+  - name: blum
+    description: Operations rearding blum integer
+  - name: user
+    description: Operations regarding user
+paths:
+  /blum:
+    get:
+      tags:
+        - blum
+      summary: Get blum integer from the backend server
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  blum:
+                    type: string
+                    example: '987654321234567'
+  /user/register:
+    post:
+      tags:
+        - user
+      summary: Create user (Peggy).
+      description: Username has to be unique (case insensitive).
+      requestBody:
+        description: Created user object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: successful operation
+  /user/info:
+    get:
+      tags:
+        - user
+      summary: Retreive user's (peggy) information.
+      description: User(name) has to exist
+      parameters:
+        - in: query
+          name: username
+          schema:
+            type: string
+            description: Username of the user whose information is needed
+            example: Peggy
+
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          
+        '404':
+          description: username not found
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        username:
+          description: can act as the primary key
+          type: string
+          example: Peggy
+        pubKeys:
+          type: string
+          example: 987678901,123456789,987654
+        blum:
+          type: string
+          example: 1234567890
+     
+    
