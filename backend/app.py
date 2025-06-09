@@ -55,3 +55,23 @@ def register_user():
     cur.execute("INSERT INTO user VALUES (:username,:pubKeys,:blum)", data)
     db.commit()
     return ("Success", 200)
+
+
+@app.route("/user/info")
+def user_info():
+    data = request.args
+
+    if "username" not in data:
+        return ("", 400)
+
+    db = get_db()
+    cur = db.cursor()
+
+    res = cur.execute(
+        "SELECT * FROM user WHERE username = ?", (data["username"].lower(),)
+    ).fetchone()
+
+    if res is None:
+        return "Username does not exist"
+
+    return (dict(res), 200)
