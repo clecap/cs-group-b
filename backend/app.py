@@ -52,6 +52,13 @@ def register_user():
     db = get_db()
     cur = db.cursor()
 
+    user = cur.execute(
+        "SELECT * FROM user WHERE username = ?", (data["username"].lower(),)
+    ).fetchone()
+
+    if user is not None:
+        return ("user already exists", 406)
+
     cur.execute("INSERT INTO user VALUES (:username,:pubKeys,:blum)", data)
     db.commit()
     return ("Success", 200)
