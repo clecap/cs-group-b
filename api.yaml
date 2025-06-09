@@ -62,9 +62,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+            string:
+              example: 'Username does not exist'
           
-        '404':
-          description: username not found
 components:
   schemas:
     User:
