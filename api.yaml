@@ -37,10 +37,15 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/user'
       responses:
         '200':
           description: successful operation
+        '406':
+          description: Trying to register with an existing name
+          content:
+            string:
+              example: 'user already exists'
   /user/info:
     get:
       tags:
@@ -57,17 +62,17 @@ paths:
 
       responses:
         '200':
-          description: successful operation
+          description: successful operation (check content type for more info)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/user'
             string:
               example: 'Username does not exist'
           
 components:
   schemas:
-    User:
+    user:
       type: object
       properties:
         username:
