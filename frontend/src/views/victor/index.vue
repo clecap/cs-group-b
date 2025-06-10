@@ -1,5 +1,5 @@
 <script setup>
-import BaseLayout from '../layouts/BaseLayout.vue';
+import BaseLayout from '../../layouts/BaseLayout.vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
