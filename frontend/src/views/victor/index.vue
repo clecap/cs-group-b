@@ -62,25 +62,11 @@ const goHome = () => {
           <div class="flex items-center space-x-2">
             <input
               type="text"
-              maxlength="1"
-              class="w-12 h-12 text-center border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled
-            />
-            <input
-              type="text"
-              maxlength="1"
-              class="w-12 h-12 text-center border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled
-            />
-            <input
-              type="text"
-              maxlength="1"
-              class="w-12 h-12 text-center border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled
+              class="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <button
-              class="ml-4 px-4 py-2 bg-gray-300 text-gray-500 rounded-full cursor-not-allowed"
-              disabled
+              class="p-2 border border-gray-300 rounded-full hover:bg-gray-50 transition"
+              @click="() => {}"
             >
               →
             </button>
