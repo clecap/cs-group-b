@@ -1,5 +1,5 @@
 <script setup>
-import BaseLayout from '../layouts/BaseLayout.vue';
+import BaseLayout from '../../layouts/BaseLayout.vue';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -25,7 +25,7 @@ const copySecrets = () => {
 };
 
 const handleRegister = () => {
-  router.push('/peggy-user');
+  router.push('/peggy');
 };
 </script>
 

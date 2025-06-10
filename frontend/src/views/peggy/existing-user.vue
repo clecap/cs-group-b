@@ -1,5 +1,5 @@
 <script setup>
-import BaseLayout from '../layouts/BaseLayout.vue';
+import BaseLayout from '../../layouts/BaseLayout.vue';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -13,7 +13,7 @@ const handleSubmit = () => {
 };
 
 const handleRegister = () => {
-  router.push('/peggy-register');
+  router.push('/peggy/register');
 };
 </script>
 

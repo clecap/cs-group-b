@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import HomeView from '../views/home.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -12,22 +12,22 @@ const router = createRouter({
     {
       path: '/victor',
       name: 'victor',
-      component: () => import('../views/VictorView.vue'),
+      component: () => import('../views/victor/index.vue'),
     },
     {
-      path: '/peggy-existing',
+      path: '/peggy/existing',
       name: 'PeggyExisting',
-      component: () => import('../views/PeggyView_ExistingUser.vue'),
+      component: () => import('../views/peggy/existing-user.vue'),
     },
     {
-      path: '/peggy-register',
+      path: '/peggy/register',
       name: 'PeggyRegister',
-      component: () => import('../views/PeggyView_RegisterAsPeggy.vue')
+      component: () => import('../views/peggy/register.vue')
     },
     {
-      path: '/peggy-user',
+      path: '/peggy',
       name: 'PeggyUser',
-      component: () => import('../views/PeggyView_User.vue')
+      component: () => import('../views/peggy/index.vue')
     }
   ],
 })

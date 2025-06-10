@@ -5,7 +5,7 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 const navigateToPeggy = () => {
-  router.push('/peggy-existing');
+  router.push('/peggy/existing');
 };
 
 const navigateToVictor = () => {
