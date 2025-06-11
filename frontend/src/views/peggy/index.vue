@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>Victor</h1>
+    <h1>Peggy Username</h1>
   </div>
 </template>
 

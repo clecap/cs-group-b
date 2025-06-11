@@ -1,6 +1,10 @@
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, jsonify
 from flask_socketio import SocketIO, emit
 import os
+from utils import generate_blum, get_db
+from flask import g
+from configparser import ConfigParser
+from flask import request
 
 app = Flask(__name__, static_folder='../frontend', static_url_path='')
 app.secret_key = os.urandom(24)
@@ -19,3 +23,78 @@ def publishPublicKeys(data):
 if __name__ == '__main__':
     socketio.run(app, debug=True)
     
+# close db connection after every request
+@app.teardown_appcontext
+def close_connection(exception):
+    db = getattr(g, "_database", None)
+    if db is not None:
+        db.close()
+
+
+@app.route("/")
+def hello_world():
+    return "<p>Hello, World!</p>"
+
+
+config_object = ConfigParser()
+config_object.read("config.ini")
+
+bitsize_info = config_object["BITSIZE"]
+
+
+# WARN: By default 4300 is the max number of digits an int can have that is to be coverted to a string; Maximum digits a 2048 bit number can have is 617
+@app.route("/blum")
+def send_blum():
+    return jsonify({"blum": generate_blum(int(bitsize_info["blumInt"]))})
+
+
+@app.route("/user/register", methods=["POST"])
+def register_user():
+    data = (
+        request.json
+    )  # WARN: request should have content type as json set for this to work
+
+    # data = request.get_json(force=True) # otherwise use this
+
+    # if json data is missing or keys are wrong then throw 400 error; very basic sanity check, should use something like JSONSCHEMA library for validation if serious
+    if (
+        data is None
+        or len(data) != 3
+        or any(x not in data.keys() for x in ["username", "pubKeys", "blum"])
+    ):
+        return ("", 400)
+
+    data["username"] = data["username"].lower()
+    db = get_db()
+    cur = db.cursor()
+
+    user = cur.execute(
+        "SELECT * FROM user WHERE username = ?", (data["username"].lower(),)
+    ).fetchone()
+
+    if user is not None:
+        return ("user already exists", 406)
+
+    cur.execute("INSERT INTO user VALUES (:username,:pubKeys,:blum)", data)
+    db.commit()
+    return ("Success", 200)
+
+
+@app.route("/user/info")
+def user_info():
+    data = request.args
+
+    if "username" not in data:
+        return ("", 400)
+
+    db = get_db()
+    cur = db.cursor()
+
+    res = cur.execute(
+        "SELECT * FROM user WHERE username = ?", (data["username"].lower(),)
+    ).fetchone()
+
+    if res is None:
+        return "Username does not exist"
+
+    return (dict(res), 200)

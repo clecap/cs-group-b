@@ -3,12 +3,28 @@ services:
     build: ./backend
     ports:
       - "8000:5000"
+    environment:
+        FLASK_DEBUG : True
+    develop:
+      watch:
+        - action: rebuild
+          path: ./backend/pyproject.toml
+        - action: sync
+          path: ./backend
+          target: /usr/src/app 
 
   frontend:
     build: ./frontend
     ports:
-      - "8001:5000"
+      - "8001:5173"
     depends_on:
       backend:
         condition: service_started
       # can provide healthcheck in the backend image and provide service_healthy condition check in this image in future
+    develop:
+      watch:
+        - action: rebuild
+          path: ./frontend/package.json
+        - action: sync
+          path: ./frontend
+          target: /usr/src/app
