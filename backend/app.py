@@ -19,9 +19,6 @@ def index():
 @socketio.on('publish_public_keys')
 def publishPublicKeys(data):
     emit('public_keys_received', data, broadcast=True)
-
-if __name__ == '__main__':
-    socketio.run(app, debug=True)
     
 # close db connection after every request
 @app.teardown_appcontext
@@ -98,3 +95,6 @@ def user_info():
         return "Username does not exist"
 
     return (dict(res), 200)
+
+if __name__ == '__main__':
+    socketio.run(app, debug=True)
