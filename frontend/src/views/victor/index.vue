@@ -1,12 +1,23 @@
 <script setup>
 import BaseLayout from '../../layouts/BaseLayout.vue';
 import { useRouter } from 'vue-router';
+import socket from '@/helpers/socket';
+import { ref, onMounted } from 'vue';
 
 const router = useRouter();
 
 const goHome = () => {
   router.push('/');
 };
+
+const receivedKeysMessage = ref('Public keys t₁, t₂, t₃ = xxxx, xxxx, xxxx');
+
+
+onMounted(() => {
+  socket.on('public_keys_received', (data) => {
+    receivedKeysMessage.value = 'Received public keys: ' + data.public_keys.join(', ');
+  });
+});
 </script>
 
 <template>
@@ -21,7 +32,7 @@ const goHome = () => {
         <div class="space-y-2">
           <div class="text-gray-700">Waiting for public keys.......</div>
           <div class="font-mono text-sm">
-            Public keys t₁, t₂, t₃ = xxxx, xxxx, xxxx
+            <p>{{ receivedKeysMessage }}</p>
           </div>
         </div>
 

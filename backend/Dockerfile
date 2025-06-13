@@ -6,11 +6,12 @@ WORKDIR /usr/src/app
 # install poetry
 RUN curl -sSL https://install.python-poetry.org | python3 -
 
+# add poetry to path
+ENV PATH="${PATH}:/root/.local/bin"
+
 # copy all the files to the container
 COPY ./pyproject.toml ./poetry.lock .
 
-# add poetry to path
-ENV PATH="${PATH}:/root/.local/bin"
 
 # install dependencies
 RUN poetry install

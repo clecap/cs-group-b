@@ -1,12 +1,25 @@
-from flask import Flask, jsonify
+from flask import Flask, send_from_directory, jsonify
+from flask_socketio import SocketIO, emit
+import os
 from utils import generate_blum, get_db
 from flask import g
 from configparser import ConfigParser
 from flask import request
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='../frontend', static_url_path='')
+app.secret_key = os.urandom(24)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
+@app.route('/')
+@app.route('/peggy')
+@app.route('/victor')
+def index():
+    return send_from_directory(app.static_folder, 'index.html')
 
+@socketio.on('publish_public_keys')
+def publishPublicKeys(data):
+    emit('public_keys_received', data, broadcast=True)
+    
 # close db connection after every request
 @app.teardown_appcontext
 def close_connection(exception):
@@ -82,3 +95,6 @@ def user_info():
         return "Username does not exist"
 
     return (dict(res), 200)
+
+if __name__ == '__main__':
+    socketio.run(app, debug=True)
