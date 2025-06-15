@@ -5,8 +5,11 @@ from utils import generate_blum, get_db
 from flask import g
 from configparser import ConfigParser
 from flask import request
+from flask_cors import CORS
+
 
 app = Flask(__name__, static_folder='../frontend', static_url_path='')
+CORS(app)
 app.secret_key = os.urandom(24)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
