@@ -23,7 +23,7 @@ onMounted(() => {
 <template>
   <BaseLayout>
     <template #header>
-      <h1 class="text-3xl font-bold text-center">Victor</h1>
+      <h1 class="text-3xl font-bold text-center">Verifier</h1>
     </template>
 
     <template #default>

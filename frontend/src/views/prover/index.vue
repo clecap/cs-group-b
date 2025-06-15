@@ -1,9 +1,9 @@
-<!-- PeggyPage.vue -->
+<!-- ProverPage.vue -->
 <template>
   <BaseLayout>
     <!-- header slot -->
     <template #header>
-      <h1 class="text-3xl font-bold text-center mb-6">Peggy</h1>
+      <h1 class="text-3xl font-bold text-center mb-6">Prover</h1>
     </template>
 
     <!-- main content -->
@@ -16,22 +16,22 @@
 
       <!-- Toggle -->
       <div class="flex items-center">
-        <span :class="!useVictorsBits ? 'text-black font-medium' : 'text-gray-600'">Predict challenge bits</span>
+        <span :class="!useVerifiersBits ? 'text-black font-medium' : 'text-gray-600'">Predict challenge bits</span>
         <button
-          @click="useVictorsBits = !useVictorsBits"
+          @click="useVerifiersBits = !useVerifiersBits"
           class="mx-4 relative w-14 h-8 flex items-center rounded-full transition-colors duration-200 focus:outline-none"
-          :class="useVictorsBits ? 'bg-black' : 'bg-gray-300'"
+          :class="useVerifiersBits ? 'bg-black' : 'bg-gray-300'"
         >
           <span
             class="block w-6 h-6 bg-white rounded-full shadow transform transition-transform duration-200"
-            :class="useVictorsBits ? 'translate-x-7' : 'translate-x-1'"
+            :class="useVerifiersBits ? 'translate-x-7' : 'translate-x-1'"
           ></span>
         </button>
-        <span :class="useVictorsBits ? 'text-black font-medium' : 'text-gray-600'">Use Victor’s challenge bits</span>
+        <span :class="useVerifiersBits ? 'text-black font-medium' : 'text-gray-600'">Use Verifier’s challenge bits</span>
       </div>
 
-      <!-- Good Peggy -->
-      <div v-if="!useVictorsBits" class="space-y-6">
+      <!-- Good Prover -->
+      <div v-if="!useVerifiersBits" class="space-y-6">
         <div class="flex items-center">
           <span class="flex-1">Random coprime, r:</span>
           <button
@@ -58,7 +58,7 @@
           @click="sendX"
           class="w-full border-1 border-black rounded-full px-6 py-2"
         >
-          Send x to Victor
+          Send x to Verifier
         </button>
 
         <p class="text-center text-sm text-gray-600">
@@ -99,7 +99,7 @@
         </button>
       </div>
 
-      <!-- Evil Peggy -->
+      <!-- Evil Prover -->
       <div v-else class="space-y-6">
         <div class="flex items-center">
           <span class="flex-1">Set challenge bits, c:</span>
@@ -139,7 +139,7 @@
           @click="sendForgedX"
           class="w-full border-1 border-black rounded-full px-6 py-2"
         >
-          Send x to Victor
+          Send x to Verifier
         </button>
 
         <p class="text-center text-sm text-gray-600">
@@ -164,9 +164,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted  } from 'vue';
 //import socket from '@/helpers/socket';
 import BaseLayout from '@/layouts/BaseLayout.vue';
+import api from '@/helpers/api';
+
 
 // const publicKeysInput = ref('');
 // const statusMessage = ref('');
@@ -180,14 +182,14 @@ import BaseLayout from '@/layouts/BaseLayout.vue';
 
 
 const username = ref('Username')
-const useVictorsBits = ref(false)
+const useVerifiersBits = ref(false)
 const r = ref(null)
 const xDisplay = ref('—')
 const secrets = ref('')
 const challengeBits = ref(['X', 'X', 'X'])
 const yDisplay = ref('—')
 
-// Evil Peggy
+// Evil Prover
 const evilBits = ref('')
 const forgedY = ref(null)
 const forgedXDisplay = ref('—')
@@ -200,5 +202,17 @@ function sendY() {}
 function generateForgedY() {  }
 function computeForgedX() {  }
 function sendForgedX() {}
+
+
+onMounted(async () => {
+ try {
+      const res = await api.get('/user');
+      this.users = res.data;
+    } catch (err) {
+      console.error('Failed to load user:', err);
+    } finally {
+      this.loading = false;
+    }
+})
 
 </script>

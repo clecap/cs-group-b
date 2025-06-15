@@ -13,7 +13,7 @@ const handleSubmit = () => {
 };
 
 const handleRegister = () => {
-  router.push('/peggy/register');
+  router.push('/prover/register');
 };
 </script>
 

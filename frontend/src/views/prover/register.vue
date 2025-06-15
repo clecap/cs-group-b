@@ -25,14 +25,14 @@ const copySecrets = () => {
 };
 
 const handleRegister = () => {
-  router.push('/peggy');
+  router.push('/prover');
 };
 </script>
 
 <template>
   <BaseLayout>
     <template #header>
-      <h1 class="text-3xl font-bold text-center">Register as Peggy</h1>
+      <h1 class="text-3xl font-bold text-center">Register as Prover</h1>
     </template>
 
     <template #default>
