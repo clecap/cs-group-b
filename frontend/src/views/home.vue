@@ -5,7 +5,7 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 const navigateToProver = () => {
-  router.push('/prover/existing');
+  router.push('/prover/verify-user');
 };
 
 const navigateToVerifier = () => {

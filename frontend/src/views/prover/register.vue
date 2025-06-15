@@ -25,7 +25,7 @@ const copySecrets = () => {
 };
 
 const handleRegister = () => {
-  router.push('/prover');
+  router.push(`/prover/${username.value}`);
 };
 </script>
 

@@ -165,6 +165,7 @@
 
 <script setup>
 import { ref, onMounted  } from 'vue';
+import { useRoute } from 'vue-router'
 //import socket from '@/helpers/socket';
 import BaseLayout from '@/layouts/BaseLayout.vue';
 import api from '@/helpers/api';
@@ -180,7 +181,7 @@ import api from '@/helpers/api';
 //   statusMessage.value = 'Public Keys Have Been Published';
 // };
 
-
+const route = useRoute()
 const username = ref('Username')
 const useVerifiersBits = ref(false)
 const r = ref(null)
@@ -204,15 +205,11 @@ function computeForgedX() {  }
 function sendForgedX() {}
 
 
-onMounted(async () => {
- try {
-      const res = await api.get('/user');
-      this.users = res.data;
-    } catch (err) {
-      console.error('Failed to load user:', err);
-    } finally {
-      this.loading = false;
-    }
+onMounted(() => {
+  const userparam = route.params.user
+  if(userparam) {
+      username.value = userparam;
+  }
 })
 
 </script>

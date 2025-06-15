@@ -15,9 +15,9 @@ const router = createRouter({
       component: () => import('../views/verifier/index.vue'),
     },
     {
-      path: '/prover/existing',
-      name: 'ProverExisting',
-      component: () => import('../views/prover/existing-user.vue'),
+      path: '/prover/verify-user',
+      name: 'ProverVerify',
+      component: () => import('../views/prover/verify-user.vue'),
     },
     {
       path: '/prover/register',
@@ -25,9 +25,9 @@ const router = createRouter({
       component: () => import('../views/prover/register.vue')
     },
     {
-      path: '/prover',
+      path: '/prover/:user',
       name: 'ProverUser',
-      component: () => import('../views/prover/index.vue')
+      component: () => import('../views/prover/user.vue')
     }
   ],
 })
