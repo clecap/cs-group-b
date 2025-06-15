@@ -1,10 +1,9 @@
 import { io } from 'socket.io-client';
 
-const SOCKET_URL =  import.meta.env.PROD === "production" ? undefined : "http://localhost:8000";
+const SOCKET_URL =  import.meta.env.PROD ? undefined : "http://localhost:8000";
 
 
 const socket = io(SOCKET_URL);
-
 
 const on = (event, callback) => socket.on(event, callback);
 const off = (event) => socket.off(event);
