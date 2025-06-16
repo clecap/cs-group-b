@@ -4,12 +4,12 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
-const navigateToPeggy = () => {
-  router.push('/peggy/existing');
+const navigateToProver = () => {
+  router.push('/prover/verify-user');
 };
 
-const navigateToVictor = () => {
-  router.push('/victor');
+const navigateToVerifier = () => {
+  router.push('/verifier');
 };
 </script>
 
@@ -22,20 +22,20 @@ const navigateToVictor = () => {
 
     <template #default>
       <div class="flex flex-col items-center mt-10 space-y-6">
-        <!-- Peggy button -->
+        <!-- Prover button -->
         <button
-          @click="navigateToPeggy"
+          @click="navigateToProver"
           class="border border-black rounded-xl p-3 flex items-center hover:bg-gray-100 transition cursor-pointer w-48 justify-center"
         >
-          <span>Register as Peggy</span>
+          <span>Register as Prover</span>
         </button>
 
-        <!-- Victor button -->
+        <!-- Verifier button -->
         <button
-          @click="navigateToVictor"
+          @click="navigateToVerifier"
           class="border border-black rounded-xl p-3 flex items-center hover:bg-gray-100 transition cursor-pointer w-48 justify-center"
         >
-          <span>Verify as Victor</span>
+          <span>Verify as Verifier</span>
         </button>
       </div>
     </template>

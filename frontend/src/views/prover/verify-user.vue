@@ -2,18 +2,29 @@
 import BaseLayout from '../../layouts/BaseLayout.vue';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import api from '@/helpers/api';
 
 const router = useRouter();
 const username = ref('');
+const message = ref('');
 
-const handleSubmit = () => {
-  if (username.value.trim()) {
-    console.log('Username:', username.value);
-  }
+const handleSubmit = async () => {
+ if(username.value) {
+  try {
+      const res = await api.get(`/user/info?username=${username.value}`);
+      if (typeof res.data === 'object' && res.data.username) {
+        router.push(`/prover/${username.value}`);
+      } else {
+        message.value = res.data
+      }
+    } catch (err) {
+      message.value = `Failed to load user, ${err.message}`;
+    }
+ }
 };
 
 const handleRegister = () => {
-  router.push('/peggy/register');
+  router.push('/prover/register');
 };
 </script>
 
@@ -23,7 +34,7 @@ const handleRegister = () => {
       <div class="relative w-full">
         <button
           @click="handleRegister"
-          class="absolute top-0 right-0 text-lg underline hover:text-gray-700 transition z-10"
+          class="absolute top-0 right-0 text-lg underline hover:text-gray-700 transition z-10 cursor-pointer"
         >
           Register
         </button>
@@ -32,18 +43,23 @@ const handleRegister = () => {
     </template>
 
     <template #default>
-      <div class="flex flex-col items-center mt-24">
+      <div class="flex flex-col items-center mt-10">
         <div class="flex items-center space-x-3">
-          <input
+          <div>
+            <input
             v-model="username"
             type="text"
             placeholder="Enter username"
             class="px-4 py-3 border border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-72"
             @keyup.enter="handleSubmit"
           />
+            <div v-if="message" class="text-red-500">{{ message }}</div>
+          </div>
+          
           <button
             @click="handleSubmit"
             class="p-3 border border-black rounded-full hover:bg-gray-50 transition"
+            :class="{ 'self-start': message }"
           >
             →
           </button>

@@ -10,24 +10,24 @@ const router = createRouter({
       component: HomeView,
     },
     {
-      path: '/victor',
-      name: 'victor',
-      component: () => import('../views/victor/index.vue'),
+      path: '/verifier',
+      name: 'verifier',
+      component: () => import('../views/verifier/index.vue'),
     },
     {
-      path: '/peggy/existing',
-      name: 'PeggyExisting',
-      component: () => import('../views/peggy/existing-user.vue'),
+      path: '/prover/verify-user',
+      name: 'ProverVerify',
+      component: () => import('../views/prover/verify-user.vue'),
     },
     {
-      path: '/peggy/register',
-      name: 'PeggyRegister',
-      component: () => import('../views/peggy/register.vue')
+      path: '/prover/register',
+      name: 'ProverRegister',
+      component: () => import('../views/prover/register.vue')
     },
     {
-      path: '/peggy',
-      name: 'PeggyUser',
-      component: () => import('../views/peggy/index.vue')
+      path: '/prover/:user', // pending implementation of nav guard for unregistered users
+      name: 'ProverUser',
+      component: () => import('../views/prover/user.vue')
     }
   ],
 })
