@@ -33,7 +33,7 @@ const router = createRouter({
       component: () => import('../views/prover/register.vue')
     },
     {
-      path: '/prover/:user', // pending implementation of nav guard for unregistered users
+      path: '/prover/:user',
       name: 'ProverUser',
       component: () => import('../views/prover/user.vue')
     }
