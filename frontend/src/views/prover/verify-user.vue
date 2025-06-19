@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.vue';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import api from '@/helpers/api';
+import { checkUserRegistered } from '@/helpers/userInfo'
 
 const router = useRouter();
 const username = ref('');
@@ -10,15 +10,11 @@ const message = ref('');
 
 const handleSubmit = async () => {
  if(username.value) {
-  try {
-      const res = await api.get(`/user/info?username=${username.value}`);
-      if (typeof res.data === 'object' && res.data.username) {
-        router.push(`/prover/${username.value}`);
-      } else {
-        message.value = res.data
-      }
-    } catch (err) {
-      message.value = `Failed to load user, ${err.message}`;
+  const result = await checkUserRegistered(username.value)
+    if (result.registered) {
+      router.push(`/prover/${username.value}`)
+    } else {
+      message.value = result.message
     }
  }
 };

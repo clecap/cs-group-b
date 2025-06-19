@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/home.vue'
+import { checkUserRegistered } from '@/helpers/userInfo'
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -37,5 +39,22 @@ const router = createRouter({
     }
   ],
 })
+
+router.beforeEach(async (to, from, next) => {
+  if (to.name === 'ProverUser') {
+
+    const username = to.params.user
+    const {registered} = await checkUserRegistered(username)
+
+    if (!registered) {
+      next({ name: 'ProverVerify' })
+    } else {
+      next()
+    }
+  } else {
+    next()
+  }
+})
+
 
 export default router
