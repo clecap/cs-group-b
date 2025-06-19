@@ -9,6 +9,12 @@ const router = createRouter({
       name: 'home',
       component: HomeView,
     },
+
+    {
+      path: '/api-docs',
+      name: 'apidocs',
+      component: () => import('../views/docs/api.vue'),
+    },
     {
       path: '/verifier',
       name: 'verifier',
