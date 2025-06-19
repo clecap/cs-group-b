@@ -5,10 +5,12 @@ import { SwaggerUIBundle, SwaggerUIStandalonePreset } from 'swagger-ui-dist';
 import { load } from 'js-yaml';
 
 const swaggerSpec = ref(null);
+const errorMsg = ref('');
 
 onMounted(async () => {
   try {
     const response = await fetch('/api.yaml');
+
 
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
@@ -29,11 +31,11 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error("Error loading or parsing YAML for Swagger UI:", error);
-    document.getElementById('swagger-ui').textContent = 'Failed to load API definition. Please check the console for details.';
+    errorMsg.value = 'Failed to load API definition. Please check the console for details.';
   }
 });
 </script>
 
 <template>
-  <div id="swagger-ui"></div>
+  <div id="swagger-ui">{{ errorMsg }}</div>
 </template>
