@@ -33,7 +33,8 @@
       <!-- Good Prover -->
       <div v-if="!useVerifiersBits" class="space-y-6">
         <div class="flex items-center">
-          <span class="flex-1">Random coprime, r:</span>
+          <span class="flex-1">Random coprime of blum integer n, r:</span>
+          
           <button
             @click="generateR"
             class="border-1 border-black rounded-full px-6 py-2"
@@ -41,6 +42,8 @@
             Generate
           </button>
         </div>
+
+        <span v-if="coprimeR" class="block w-full text-center text-green-600 font-semibold">✓ Random coprime generated!</span>
 
         <button
           @click="computeX"
@@ -51,7 +54,7 @@
 
         <p class="text-center">
           <code>x = r² mod n</code><br />
-          <span class="font-bold">{{ xDisplay }}</span>
+          <span class="block w-full text-center text-green-600 font-semibold">{{ xDisplay }}</span>
         </p>
 
         <button
@@ -168,7 +171,9 @@ import { ref, onMounted  } from 'vue';
 import { useRoute } from 'vue-router'
 //import socket from '@/helpers/socket';
 import BaseLayout from '@/layouts/BaseLayout.vue';
-import api from '@/helpers/api';
+import { checkUserRegistered, generateRandomCoprime } from '@/helpers/utility'
+import bigInt from 'big-integer';
+
 
 
 // const publicKeysInput = ref('');
@@ -184,19 +189,32 @@ import api from '@/helpers/api';
 const route = useRoute()
 const username = ref('Username')
 const useVerifiersBits = ref(false)
-const r = ref(null)
+const coprimeR = ref(null)
+const commitmentX = ref(null)
 const xDisplay = ref('—')
 const secrets = ref('')
 const challengeBits = ref(['X', 'X', 'X'])
 const yDisplay = ref('—')
+let blumN = ref(null)
 
 // Evil Prover
 const evilBits = ref('')
 const forgedY = ref(null)
 const forgedXDisplay = ref('—')
 
-function generateR() {  }
-function computeX() {  }
+function generateR() {
+  if(blumN.value) {
+      coprimeR.value = generateRandomCoprime(blumN.value);
+      console.log('Generated r:', coprimeR.value.toString());
+    }
+}
+function computeX() {
+  if (coprimeR.value && blumN.value) {
+    commitmentX.value = coprimeR.value.square().mod(blumN.value);
+    console.log('Computed x:', commitmentX.value.toString());
+    xDisplay.value = "✓ Commitment x has been generated!"
+  }
+}
 function sendX() {}
 function computeY() {  }
 function sendY() {}
@@ -205,10 +223,16 @@ function computeForgedX() {  }
 function sendForgedX() {}
 
 
-onMounted(() => {
+onMounted(async () => {
   const userparam = route.params.user
   if(userparam) {
       username.value = userparam;
+  }
+ if(username.value) {
+  const result = await checkUserRegistered(username.value)
+    if (result.registered) {
+      blumN.value = bigInt(result.user.blum)
+    }
   }
 })
 

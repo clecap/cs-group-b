@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/home.vue'
-import { checkUserRegistered } from '@/helpers/userInfo'
+import { checkUserRegistered } from '@/helpers/utility'
 
 
 const router = createRouter({
