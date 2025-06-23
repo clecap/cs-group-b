@@ -68,7 +68,7 @@
           Waiting for challenge bits……
         </p>
         <p class="text-center font-medium">
-          Received challenge bits: {{ challengeBits.join(' ') }}
+          Received challenge bits: {{ challengeBits }}
         </p>
 
         <div>
@@ -91,7 +91,7 @@
           <code
             >y = r × s₁ᶜ¹ × s₂ᶜ² × … × s<sub>k</sub>ᶜᵏ mod n</code
           ><br />
-          <span class="font-bold">{{ yDisplay }}</span>
+          <span class="block w-full text-center text-green-600 font-semibold">{{ yDisplay }}</span>
         </p>
 
         <button
@@ -110,7 +110,7 @@
             v-model="evilBits"
             type="text"
             placeholder="e.g. 0 1 1"
-            class="border-1 border-black rounded-full px-4 py-2 w-40"
+            class="border-1 border-black rounded-full px-4 py-2 w-70"
           />
         </div>
 
@@ -145,11 +145,12 @@
           Send x to Verifier
         </button>
 
-        <p class="text-center text-sm text-gray-600">
-          Waiting for challenge bits……
+        <p class="text-center text-sm text-gray-600" v-if="challengeBitsloadingText">
+          {{ challengeBitsloadingText }}
+          <!-- Waiting for challenge bits…… -->
         </p>
         <p class="text-center font-medium">
-          Received challenge bits: {{ challengeBits.join(' ') }}
+          Received challenge bits: {{ challengeBits }}
         </p>
         <p class="text-center text-sm text-gray-600">
           Matches with previously set challenge bits
@@ -193,14 +194,17 @@ const coprimeR = ref(null)
 const commitmentX = ref(null)
 const xDisplay = ref('—')
 const secrets = ref('')
-const challengeBits = ref(['X', 'X', 'X'])
+const challengeBits = ref([1,0,1,1,0,0,1,0,1,1,0,1,0,0,1,1,0,1,0,1,1,1,0,0,1,0,1,0,0,1,1,0]) // Example challenge bits
 const yDisplay = ref('—')
-let blumN = ref(null)
+const responseY = ref('')
+const blumN = ref(null)
+const challengeBitsloadingText = ref('')
 
 // Evil Prover
 const evilBits = ref('')
 const forgedY = ref(null)
 const forgedXDisplay = ref('—')
+
 
 function generateR() {
   if(blumN.value) {
@@ -216,7 +220,33 @@ function computeX() {
   }
 }
 function sendX() {}
-function computeY() {  }
+
+function computeY() {
+  try {
+    const parsedSecrets = parseSecrets(secrets.value)
+
+    console.log(challengeBits.value[0])
+    for (let i = 0; i < parsedSecrets.length; i++) {
+      coprimeR.value = coprimeR.value.multiply(parsedSecrets[i].pow(challengeBits.value[i])).mod(blumN.value)
+    }
+
+    responseY.value = coprimeR.value.toString()
+    console.log('Computed y:', responseY.value);
+    yDisplay.value = "✓ Response y has been generated!"
+  } catch (err) {
+    console.error('Error computing y:', err);
+    yDisplay.value = 'Error: Invalid input.'
+  }
+}
+
+function parseSecrets(str) {
+  return str
+    .split('\n')
+    .map(s => s.trim())
+    .filter(s => s.length > 0)
+    .map(s => bigInt(s))
+}
+
 function sendY() {}
 function generateForgedY() {  }
 function computeForgedX() {  }
@@ -232,6 +262,7 @@ onMounted(async () => {
   const result = await checkUserRegistered(username.value)
     if (result.registered) {
       blumN.value = bigInt(result.user.blum)
+
     }
   }
 })
