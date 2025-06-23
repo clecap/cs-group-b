@@ -26,11 +26,17 @@ function gcd(a, b) {
 
 // Generate a random big-integer between [min, max)
 function randomBigInt(min, max) {
-  // bigInt.randBetween is inclusive, so use max.minus(1)
-  return bigInt.randBetween(bigInt(min), bigInt(max).minus(1));
+  const range = max.minus(min).plus(1); // Size of the range [min, max]
+  const byteLength = Math.ceil(range.bitLength() / 8); // Bytes needed
+  let randomValue;
+  do {
+    const randomBytes = new Uint8Array(byteLength);
+    crypto.getRandomValues(randomBytes); // Cryptographically secure
+    randomValue = bigInt.fromArray([...randomBytes], 256); // Convert bytes to bigInt
+  } while (randomValue.lesser(min) || randomValue.greaterOrEquals(max));
+  return randomValue;
 }
 
-// Generate random coprime r (as a big-integer object)
 export function generateRandomCoprime(n) {
   let r;
   const two = bigInt(2);
@@ -38,5 +44,5 @@ export function generateRandomCoprime(n) {
   do {
     r = randomBigInt(two, nMinusOne);
   } while (!gcd(r, n).equals(1));
-  return r; // returns a big-integer object
+  return r;
 }
