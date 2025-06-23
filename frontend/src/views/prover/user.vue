@@ -64,6 +64,8 @@
           Send x to Verifier
         </button>
 
+        <p>{{ statusMessage }}</p>
+
         <p class="text-center text-sm text-gray-600">
           Waiting for challenge bits……
         </p>
@@ -169,22 +171,12 @@
 <script setup>
 import { ref, onMounted  } from 'vue';
 import { useRoute } from 'vue-router'
-//import socket from '@/helpers/socket';
+import socket from '@/helpers/socket';
 import BaseLayout from '@/layouts/BaseLayout.vue';
 import { checkUserRegistered, generateRandomCoprime } from '@/helpers/utility'
 import bigInt from 'big-integer';
 
 
-
-// const publicKeysInput = ref('');
-// const statusMessage = ref('');
-
-
-// const sendPublicKeys = () => {
-//   const keys = publicKeysInput.value.split(',').map(k => k.trim());
-//   socket.emit('publish_public_keys', { public_keys: keys });
-//   statusMessage.value = 'Public Keys Have Been Published';
-// };
 
 const route = useRoute()
 const username = ref('Username')
@@ -215,7 +207,19 @@ function computeX() {
     xDisplay.value = "✓ Commitment x has been generated!"
   }
 }
-function sendX() {}
+
+const statusMessage = ref('');
+
+// const sendPublicKeys = () => {
+//   const keys = publicKeysInput.value.split(',').map(k => k.trim());
+//   socket.emit('publish_public_keys', { public_keys: keys });
+//   statusMessage.value = 'Public Keys Have Been Published';
+// };
+
+const sendX = () => {
+  socket.emit('publish_commitment_x', { commitment_x: commitmentX.value.toString() });
+  statusMessage.value = 'Commitment has Been Published';
+};
 function computeY() {  }
 function sendY() {}
 function generateForgedY() {  }

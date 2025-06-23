@@ -14,14 +14,20 @@ app.secret_key = os.urandom(24)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 @app.route('/')
-@app.route('/peggy')
-@app.route('/victor')
-def index():
+def home():
+    return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('/prover/<string:username>')
+def index(username):
     return send_from_directory(app.static_folder, 'index.html')
 
 @socketio.on('publish_public_keys')
 def publishPublicKeys(data):
     emit('public_keys_received', data, broadcast=True)
+
+@socketio.on('publish_commitment_x')
+def handleX(data):
+    emit('publish_commitment_x', data, broadcast=True)
     
 # close db connection after every request
 @app.teardown_appcontext
@@ -29,11 +35,6 @@ def close_connection(exception):
     db = getattr(g, "_database", None)
     if db is not None:
         db.close()
-
-
-@app.route("/")
-def hello_world():
-    return "<p>Hello, World!</p>"
 
 
 config_object = ConfigParser()
