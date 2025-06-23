@@ -45,7 +45,7 @@ bitsize_info = config_object["BITSIZE"]
 # WARN: By default 4300 is the max number of digits an int can have that is to be coverted to a string; Maximum digits a 2048 bit number can have is 617
 @app.route("/blum")
 def send_blum():
-    return jsonify({"blum": generate_blum(int(bitsize_info["blumInt"]))})
+    return jsonify({"blum": str(generate_blum(int(bitsize_info["blumInt"])))})
 
 
 @app.route("/user/register", methods=["POST"])
