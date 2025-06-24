@@ -43,7 +43,7 @@
           </button>
         </div>
 
-        <span v-if="coprimeR" class="block w-full text-center text-green-600 font-semibold">✓ Random coprime generated!</span>
+        <p v-if="coprimeR" class="w-full text-center text-green-600 font-semibold">✓ Random coprime generated!</p>
 
         <button
           @click="computeX"
@@ -54,7 +54,7 @@
 
         <p class="text-center">
           <code>x = r² mod n</code><br />
-          <span class="block w-full text-center text-green-600 font-semibold">{{ xDisplay }}</span>
+          <p class="w-full text-center text-green-600 font-semibold">{{ xDisplay }}</p>
         </p>
 
         <button
@@ -64,12 +64,18 @@
           Send x to Verifier
         </button>
 
-        <p>{{ statusMessage }}</p>
+        <p class="block w-full text-center text-green-600 font-semibold">{{ statusMessage }}</p>
 
-        <p class="text-center text-sm text-gray-600">
-          Waiting for challenge bits……
+        <p class="text-center text-sm text-gray-600" v-if="challengeBitsLoading">
+          Waiting for challenge bits
+          <span class="dot">.</span>
+          <span class="dot" style="animation-delay: 0.15s">.</span>
+          <span class="dot" style="animation-delay: 0.3s">.</span>
+          <span class="dot" style="animation-delay: 0.45s">.</span>
+          <span class="dot" style="animation-delay: 0.6s">.</span>
         </p>
-        <p class="text-center font-medium">
+
+        <p class="text-center font-medium" v-if="challengeBits.length > 0">
           Received challenge bits: {{ challengeBits }}
         </p>
 
@@ -93,7 +99,7 @@
           <code
             >y = r × s₁ᶜ¹ × s₂ᶜ² × … × s<sub>k</sub>ᶜᵏ mod n</code
           ><br />
-          <span class="block w-full text-center text-green-600 font-semibold">{{ yDisplay }}</span>
+          <p class="block w-full text-center text-green-600 font-semibold">{{ yDisplay }}</p>
         </p>
 
         <button
@@ -102,6 +108,7 @@
         >
           Send y →
         </button>
+        <p class="block w-full text-center text-green-600 font-semibold">{{ ySendStatusText }}</p>
       </div>
 
       <!-- Evil Prover -->
@@ -147,16 +154,20 @@
           Send x to Verifier
         </button>
 
-        <p class="text-center text-sm text-gray-600" v-if="challengeBitsloadingText">
-          {{ challengeBitsloadingText }}
-          <!-- Waiting for challenge bits…… -->
+        <p class="text-center text-sm text-gray-600" v-if="challengeBitsLoading">
+          Waiting for challenge bits
+          <span class="dot">.</span>
+          <span class="dot" style="animation-delay: 0.15s">.</span>
+          <span class="dot" style="animation-delay: 0.3s">.</span>
+          <span class="dot" style="animation-delay: 0.45s">.</span>
+          <span class="dot" style="animation-delay: 0.6s">.</span>
         </p>
         <p class="text-center font-medium">
           Received challenge bits: {{ challengeBits }}
         </p>
-        <p class="text-center text-sm text-gray-600">
+        <!-- <p class="text-center text-sm text-gray-600" v-if="">
           Matches with previously set challenge bits
-        </p>
+        </p> -->
 
         <button
           @click="sendY"
@@ -186,16 +197,25 @@ const coprimeR = ref(null)
 const commitmentX = ref(null)
 const xDisplay = ref('—')
 const secrets = ref('')
-const challengeBits = ref([1,0,1,1,0,0,1,0,1,1,0,1,0,0,1,1,0,1,0,1,1,1,0,0,1,0,1,0,0,1,1,0]) // Example challenge bits
+const challengeBits = ref([])
 const yDisplay = ref('—')
 const responseY = ref('')
 const blumN = ref(null)
-const challengeBitsloadingText = ref('')
+const pubKeys = ref([])
+const ySendStatusText = ref('')
 
 // Evil Prover
 const evilBits = ref('')
 const forgedY = ref(null)
 const forgedXDisplay = ref('—')
+const challengeBitsLoading = ref(false)
+
+socket.on('challenge_bits_received', ({challenge_bits}) => {
+  if(challenge_bits) {
+    challengeBits.value = challenge_bits.split('').map(Number);
+    challengeBitsLoading.value = false;
+  }
+})
 
 
 function generateR() {
@@ -214,19 +234,21 @@ function computeX() {
 
 function computeY() {
   try {
+    if( !coprimeR.value || !blumN.value || !secrets.value || challengeBits.value.length === 0) {
+      return
+    }
     const parsedSecrets = parseSecrets(secrets.value)
 
-    console.log(challengeBits.value[0])
     for (let i = 0; i < parsedSecrets.length; i++) {
       coprimeR.value = coprimeR.value.multiply(parsedSecrets[i].pow(challengeBits.value[i])).mod(blumN.value)
     }
 
     responseY.value = coprimeR.value.toString()
     console.log('Computed y:', responseY.value);
-    yDisplay.value = "✓ Response y has been generated!"
+    ySendStatusText.value = "✓ Response y has been generated!"
   } catch (err) {
     console.error('Error computing y:', err);
-    yDisplay.value = 'Error: Invalid input.'
+    ySendStatusText.value = 'Error: Invalid input.'
   }
 }
 
@@ -248,11 +270,23 @@ const statusMessage = ref('');
 // };
 
 const sendX = () => {
+  if (!commitmentX.value) {
+    statusMessage.value = 'Please compute x before sending.';
+    return;
+  }
   socket.emit('publish_commitment_x', { commitment_x: commitmentX.value.toString() });
-  statusMessage.value = 'Commitment has Been Published';
+  statusMessage.value = '✓ Commitment has Been Published';
+  challengeBitsLoading.value = true;
 };
 
-function sendY() {}
+function sendY() {
+  if (!responseY.value) {
+    yDisplay.value = '✓ Please compute y before sending';
+    return;
+  }
+  socket.emit('publish_response_y', { response_y: responseY.value });
+  yDisplay.value = '✓ Response y has Been Published';
+}
 function generateForgedY() {  }
 function computeForgedX() {  }
 function sendForgedX() {}
@@ -266,10 +300,24 @@ onMounted(async () => {
  if(username.value) {
   const result = await checkUserRegistered(username.value)
     if (result.registered) {
-      blumN.value = bigInt(result.user.blum)
-
+      const {user} = result
+      blumN.value = bigInt(user.blum)
+      pubKeys.value = user.pubKeys.split(',').map(k => bigInt(k.trim()))
     }
+    socket.emit('publish_public_keys', { pubKeys: pubKeys.value });
   }
 })
 
 </script>
+
+<style scoped>
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.dot {
+  display: inline-block;
+  animation: blink 1s step-end infinite;
+}
+</style>
