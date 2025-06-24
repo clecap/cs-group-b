@@ -245,10 +245,10 @@ function computeY() {
 
     responseY.value = coprimeR.value.toString()
     console.log('Computed y:', responseY.value);
-    ySendStatusText.value = "✓ Response y has been generated!"
+    yDisplay.value = "✓ Response y has been generated!"
   } catch (err) {
     console.error('Error computing y:', err);
-    ySendStatusText.value = 'Error: Invalid input.'
+    yDisplay.value = 'Error: Invalid input.'
   }
 }
 
@@ -281,11 +281,11 @@ const sendX = () => {
 
 function sendY() {
   if (!responseY.value) {
-    yDisplay.value = '✓ Please compute y before sending';
+    ySendStatusText.value = 'Please compute y before sending.';
     return;
   }
   socket.emit('publish_response_y', { response_y: responseY.value });
-  yDisplay.value = '✓ Response y has Been Published';
+  ySendStatusText.value = '✓ Response y has Been Published';
 }
 function generateForgedY() {  }
 function computeForgedX() {  }
