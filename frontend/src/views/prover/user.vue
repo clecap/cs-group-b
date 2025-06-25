@@ -177,11 +177,12 @@
         </p>
 
         <button
-          @click="sendY"
+          @click="sendForgedY"
           class="w-full bg-black text-white rounded-full px-6 py-2"
         >
           Send y →
         </button>
+        <p class="block w-full text-center text-green-600 font-semibold">{{ ySendStatusText }}</p>
       </div>
     </div>
   </BaseLayout>
@@ -211,14 +212,15 @@ const blumN = ref(null)
 const pubKeys = ref([])
 const ySendStatusText = ref('')
 const numberOfChallengeBits = ref(0)
-const sendForgedXStatus = ref('')
+const challengeBitsLoading = ref(false)
 
 // Evil Prover
 const evilBits = ref('')
 const forgedY = ref(null)
 const forgedX = ref(null)
 const forgedXDisplay = ref('—')
-const challengeBitsLoading = ref(false)
+const sendForgedXStatus = ref('')
+
 
 const correctLength = computed(() => evilBits.value.length === numberOfChallengeBits.value)
 const onlyBinary = computed(() => /^[01]*$/.test(evilBits.value))
@@ -234,6 +236,8 @@ socket.on('challenge_bits_received', ({challenge_bits}) => {
     challengeBitsLoading.value = false;
   }
 })
+
+//Good prover
 
 function generateR() {
   if(blumN.value) {
@@ -281,12 +285,6 @@ function parseSecrets(str) {
 
 const statusMessage = ref('');
 
-// const sendPublicKeys = () => {
-//   const keys = publicKeysInput.value.split(',').map(k => k.trim());
-//   socket.emit('publish_public_keys', { public_keys: keys });
-//   statusMessage.value = 'Public Keys Have Been Published';
-// };
-
 const sendX = () => {
   if (!commitmentX.value) {
     statusMessage.value = 'Please compute x before sending.';
@@ -305,6 +303,9 @@ function sendY() {
   socket.emit('publish_response_y', { response_y: responseY.value });
   ySendStatusText.value = '✓ Response y has Been Published';
 }
+
+
+//Evil prover
 
 function generateForgedY() { //coprime to blum int n
   if(blumN.value) {
@@ -335,6 +336,20 @@ function sendForgedX() {
   socket.emit('publish_commitment_x', { commitment_x: forgedX.value.toString() });
   sendForgedXStatus.value = '✓ Commitment x has Been Published';
   challengeBitsLoading.value = true;
+}
+
+function sendForgedY() {
+  if(challengeBitsLoading.value) {
+    return;
+  }
+
+  if (!forgedY.value) {
+    ySendStatusText.value = 'Please compute y before sending';
+    return;
+  }
+  
+  socket.emit('publish_response_y', { response_y: forgedY.value });
+  ySendStatusText.value = '✓ Response y has Been Published';
 }
 
 onMounted(async () => {
