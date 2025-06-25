@@ -123,6 +123,11 @@
           />
         </div>
 
+        <p v-if="isValid" class="text-red-500 text-xs mt-1">
+          Please input {{ numberOfChallengeBits }} bits using only 0 and 1
+        </p>
+        
+
         <div class="flex items-center">
           <span class="flex-1">Forged y:</span>
           <button
@@ -181,7 +186,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted  } from 'vue';
+import { ref, onMounted, computed  } from 'vue';
 import { useRoute } from 'vue-router'
 import socket from '@/helpers/socket';
 import BaseLayout from '@/layouts/BaseLayout.vue';
@@ -203,6 +208,7 @@ const responseY = ref('')
 const blumN = ref(null)
 const pubKeys = ref([])
 const ySendStatusText = ref('')
+const numberOfChallengeBits = ref(0)
 
 // Evil Prover
 const evilBits = ref('')
@@ -210,14 +216,19 @@ const forgedY = ref(null)
 const forgedXDisplay = ref('—')
 const challengeBitsLoading = ref(false)
 
+const correctLength = computed(() => evilBits.value.length === numberOfChallengeBits.value)
+const onlyBinary = computed(() => /^[01]*$/.test(evilBits.value))
+
+const isValid = computed(() =>
+  evilBits.value.length > 0 && (!correctLength.value || !onlyBinary.value)
+)
+
 socket.on('challenge_bits_received', ({challenge_bits}) => {
   if(challenge_bits) {
     challengeBits.value = challenge_bits.split('').map(Number);
     challengeBitsLoading.value = false;
   }
 })
-
-
 function generateR() {
   if(blumN.value) {
       coprimeR.value = generateRandomCoprime(blumN.value);
@@ -281,7 +292,7 @@ const sendX = () => {
 
 function sendY() {
   if (!responseY.value) {
-    ySendStatusText.value = 'Please compute y before sending.';
+    ySendStatusText.value = 'Please compute y before sending';
     return;
   }
   socket.emit('publish_response_y', { response_y: responseY.value });
@@ -303,6 +314,7 @@ onMounted(async () => {
       const {user} = result
       blumN.value = bigInt(user.blum)
       pubKeys.value = user.pubKeys.split(',').map(k => bigInt(k.trim()))
+      numberOfChallengeBits.value = pubKeys.value.length;
     }
     socket.emit('publish_public_keys', { pubKeys: pubKeys.value });
   }
