@@ -16,7 +16,7 @@
 
       <!-- Toggle -->
       <div class="flex items-center">
-        <span :class="!useVerifiersBits ? 'text-black font-medium' : 'text-gray-600'">Predict challenge bits</span>
+        <span :class="!useVerifiersBits ? 'text-black font-medium' : 'text-gray-600'">Use Verifier’s challenge bits</span>
         <button
           type="button"
           @click="useVerifiersBits = !useVerifiersBits"
@@ -29,7 +29,7 @@
             :class="useVerifiersBits ? 'translate-x-7' : 'translate-x-1'"
           ></span>
         </button>
-        <span :class="useVerifiersBits ? 'text-black font-medium' : 'text-gray-600'">Use Verifier’s challenge bits</span>
+        <span :class="useVerifiersBits ? 'text-black font-medium' : 'text-gray-600'">Predict challenge bits</span>
       </div>
 
       <!-- Good Prover -->
@@ -115,6 +115,19 @@
 
       <!-- Evil Prover -->
       <div v-else class="space-y-6">
+        
+        <div class="flex items-center">
+          <span class="flex-1">Forged y:</span>
+          <button
+            @click="generateForgedY"
+            class="border-1 border-black rounded-full px-6 py-2"
+          >
+            Generate random y
+          </button>
+        </div>
+
+        <p v-if="forgedY" class="w-full text-center text-green-600 font-semibold">✓ Forged Y generated</p>
+
         <div class="flex items-center">
           <span class="flex-1">Set challenge bits, c:</span>
           <input
@@ -125,20 +138,9 @@
           />
         </div>
 
-        <p v-if="isValid" class="text-red-500 text-xs mt-1">
+        <p v-if="isInvalid" class="text-red-500 text-xs mt-1">
           Please input {{ numberOfChallengeBits }} bits using only 0 and 1
         </p>
-        
-
-        <div class="flex items-center">
-          <span class="flex-1">Forged y:</span>
-          <button
-            @click="generateForgedY"
-            class="border-1 border-black rounded-full px-6 py-2"
-          >
-            Generate random y
-          </button>
-        </div>
 
         <button
           @click="computeForgedX"
@@ -150,8 +152,8 @@
         <p class="text-center">
           <code
             >x = y² × (t₁ᶜ¹ × t₂ᶜ² × … × t<sub>k</sub>ᶜᵏ)⁻¹ mod n</code
-          ><br />
-          <span class="font-bold">{{ forgedXDisplay }}</span>
+          >
+          <p class="w-full text-center text-green-600 font-semibold mt-5">{{ forgedXDisplay }}</p>
         </p>
 
         <button
@@ -169,12 +171,10 @@
           <span class="dot" style="animation-delay: 0.45s">.</span>
           <span class="dot" style="animation-delay: 0.6s">.</span>
         </p>
-        <p class="text-center font-medium">
+
+        <p class="text-center font-medium" v-if="challengeBits.length > 0">
           Received challenge bits: {{ challengeBits }}
         </p>
-        <!-- <p class="text-center text-sm text-gray-600" v-if="">
-          Matches with previously set challenge bits
-        </p> -->
 
         <button
           @click="sendY"
@@ -192,7 +192,7 @@ import { ref, onMounted, computed  } from 'vue';
 import { useRoute } from 'vue-router'
 import socket from '@/helpers/socket';
 import BaseLayout from '@/layouts/BaseLayout.vue';
-import { checkUserRegistered, generateRandomCoprime } from '@/helpers/utility'
+import { checkUserRegistered, generateRandomCoprime, forgeCommitment } from '@/helpers/utility'
 import bigInt from 'big-integer';
 
 
@@ -211,17 +211,20 @@ const blumN = ref(null)
 const pubKeys = ref([])
 const ySendStatusText = ref('')
 const numberOfChallengeBits = ref(0)
+const sendForgedXStatus = ref('')
 
 // Evil Prover
 const evilBits = ref('')
 const forgedY = ref(null)
+const forgedX = ref(null)
 const forgedXDisplay = ref('—')
 const challengeBitsLoading = ref(false)
 
 const correctLength = computed(() => evilBits.value.length === numberOfChallengeBits.value)
 const onlyBinary = computed(() => /^[01]*$/.test(evilBits.value))
 
-const isValid = computed(() =>
+
+const isInvalid = computed(() =>
   evilBits.value.length > 0 && (!correctLength.value || !onlyBinary.value)
 )
 
@@ -231,12 +234,14 @@ socket.on('challenge_bits_received', ({challenge_bits}) => {
     challengeBitsLoading.value = false;
   }
 })
+
 function generateR() {
   if(blumN.value) {
       coprimeR.value = generateRandomCoprime(blumN.value);
       console.log('Generated r:', coprimeR.value.toString());
     }
 }
+
 function computeX() {
   if (coprimeR.value && blumN.value) {
     commitmentX.value = coprimeR.value.square().mod(blumN.value);
@@ -300,10 +305,37 @@ function sendY() {
   socket.emit('publish_response_y', { response_y: responseY.value });
   ySendStatusText.value = '✓ Response y has Been Published';
 }
-function generateForgedY() {  }
-function computeForgedX() {  }
-function sendForgedX() {}
 
+function generateForgedY() { //coprime to blum int n
+  if(blumN.value) {
+    forgedY.value = generateRandomCoprime(blumN.value);
+    console.log('Generated forged Y:', forgedY.value.toString());
+  }
+}
+
+function computeForgedX() {
+  console.log(!!forgedY.value, !!evilBits.value, !!blumN.value, !!isInvalid.value);
+
+  if(!forgedY.value || !evilBits.value ||   !blumN.value || isInvalid.value) {
+      forgedXDisplay.value = 'Please generate forged Y and set challenge bits';
+      return;
+  }
+  
+  const parsedEvilBits = evilBits.value.split('').map(bit => bigInt(bit));
+  forgedX.value =  forgeCommitment(forgedY.value, pubKeys.value, parsedEvilBits, blumN.value)
+  forgedXDisplay.value = '✓ Commitment x has been generated!';
+  console.log('Computed forged x:', forgedX.value.toString());  
+}
+
+function sendForgedX() {
+   if (!forgedX.value) {
+    sendForgedXStatus.value = 'Please compute x before sending.';
+    return;
+  }
+  socket.emit('publish_commitment_x', { commitment_x: forgedX.value.toString() });
+  sendForgedXStatus.value = '✓ Commitment x has Been Published';
+  challengeBitsLoading.value = true;
+}
 
 onMounted(async () => {
   const userparam = route.params.user
