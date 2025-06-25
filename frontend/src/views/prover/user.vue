@@ -18,9 +18,11 @@
       <div class="flex items-center">
         <span :class="!useVerifiersBits ? 'text-black font-medium' : 'text-gray-600'">Predict challenge bits</span>
         <button
+          type="button"
           @click="useVerifiersBits = !useVerifiersBits"
           class="mx-4 relative w-14 h-8 flex items-center rounded-full transition-colors duration-200 focus:outline-none"
           :class="useVerifiersBits ? 'bg-black' : 'bg-gray-300'"
+          :disabled="challengeBitsLoading"
         >
           <span
             class="block w-6 h-6 bg-white rounded-full shadow transform transition-transform duration-200"
