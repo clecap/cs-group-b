@@ -12,11 +12,18 @@ const goHome = () => {
 
 const receivedKeysMessage = ref('Public keys t₁, t₂, t₃ = xxxx, xxxx, xxxx');
 
+const receivedCommitmentXMessage = ref('Commitment, x: xxxx');
 
 onMounted(() => {
+
   socket.on('public_keys_received', (data) => {
     receivedKeysMessage.value = 'Received public keys: ' + data.public_keys.join(', ');
   });
+
+  socket.on('publish_commitment_x', (data) => {
+    receivedCommitmentXMessage.value = 'Received commitment x: ' + data.commitment_x;
+  });
+
 });
 </script>
 
@@ -40,7 +47,7 @@ onMounted(() => {
         <div class="space-y-2">
           <div class="text-gray-700">Waiting for commitment.......</div>
           <div class="font-mono text-sm">
-            Commitment, x: xxxx
+            <p>{{ receivedCommitmentXMessage }}</p>
           </div>
         </div>
 
