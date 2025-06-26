@@ -13,9 +13,9 @@ const goHome = () => {
 
 // placeholders..
 const receivedKeysMessage = ref('Public keys t₁, t₂, t₃ = xxxx, xxxx, xxxx');
+const receivedCommitmentXMessage = ref('Commitment, x: xxxx');
 
 
-const commitment = ref('Waiting for commitment...');
 const yValue = ref('Waiting for y...');
 const verificationResult = ref(null);
 const challengeMode = ref('auto');
@@ -36,18 +36,21 @@ const numberofKeys = ref(0); // Placeholder for number of public keys
 
 
 onMounted(() => {
+
   socket.on('public_keys_received', (data) => {
     receivedKeysMessage.value = 'Received public keys: ' + data.public_keys.join(', ');
     public_keys_received.value = true;
-  });
-  socket.on('commitment_received', (data) => {
-    commitment.value = `Commitment, x: ${data.x}`;
-    commitment_received.value = true;
   });
   socket.on('y_received', (data) => {
     yValue.value = `Receive y value: ${data.y}`;
     y_received.value = true;
   });
+
+  socket.on('publish_commitment_x', (data) => {
+    receivedCommitmentXMessage.value = 'Received commitment x: ' + data.commitment_x;
+    commitment_received.value = true;
+  });
+
 });
 
 
@@ -103,7 +106,7 @@ const generateRandomChallenge = () => {
         <div v-if="public_keys_received" class="space-y-2">
 
           <div v-if="commitment_received" class="font-mono text-sm">
-            Commitment, x: xxxx
+            <p>{{ receivedCommitmentXMessage }}</p>
           </div>
           <div v-else class="text-gray-700">Waiting for commitment.......</div>
         </div>

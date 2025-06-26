@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.vue';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { checkUserRegistered } from '@/helpers/userInfo'
+import { checkUserRegistered } from '@/helpers/utility'
 
 const router = useRouter();
 const username = ref('');
