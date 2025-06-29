@@ -1,10 +1,11 @@
 <script setup>
 import BaseLayout from '../../layouts/BaseLayout.vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import socket from '@/helpers/socket';
 import { ref, onMounted } from 'vue';
 
 const router = useRouter();
+const route = useRoute();
 
 const goHome = () => {
   router.push('/');
@@ -27,15 +28,33 @@ const commitment_received = ref(false);
 const challenge_sent = ref(false);
 const y_received = ref(false);
 
+const query = route.query
+console.log(query) // e.g., { search: 'vue', page: '2' }
+const proverName = query.proverName || 'Fallback_Prover'; // Get the username from the query params or use a fallback
+const proverKeys = query.proverKeys ? query.proverKeys.split(',') : []; // Get the public keys from the query params or use an empty array
 
 
-// This value is set whent he public keys are received.....
-// ALSO used for challenge!!!!!
+const numberofKeys = ref(proverKeys.length); // Number of public keys, derived from the query params
+console.log('Number of public keys:', numberofKeys.value); // Debug log
 
-const numberofKeys = ref(0); // Placeholder for number of public keys
+// const numberofKeys = ref(0); // Placeholder for number of public keys
+
+
+
+// getParams = () => {
+// //get the username from the query params
+// const query = router.currentRoute.value.query;
+// if (query && query.proverName) {
+//   prooverName.value = query.proverName; // Set the username from the query parameter
+// } else {
+//   prooverName.value = 'Fallback_Prover'; // Default value if not provided
+// }
+// };
 
 
 onMounted(() => {
+
+  // getParams(); // Get the username from the query params
 
   socket.on('public_keys_received', (data) => {
     receivedKeysMessage.value = 'Received public keys: ' + data.public_keys.join(', ');
@@ -91,11 +110,23 @@ const generateRandomChallenge = () => {
     <template #default>
       <div class="max-w-md mx-auto mt-8 space-y-6">
         <!-- Public Keys Section -->
+        
+        <div class="space-y-4">
+          <span class="text-lg font-semibold">
+            Verifying for <span class="text-green-600 font-bold">{{ proverName }}</span>
+          </span>
+        </div>
         <div class="space-y-2">
-
+          <div  class="font-mono text-sm">
+            Using {{ numberofKeys }} public keys: {{ proverKeys.join(', ') }}
+          </div>
+     
+<!-- 
 
           <div v-if="public_keys_received" class="text-gray-700"> received n public keys</div>
           <div v-else class="text-gray-700">Waiting for public keys.......</div>
+
+             -->
 
           <!-- <div class="font-mono text-sm">
             <p>{{ receivedKeysMessage }}</p>
