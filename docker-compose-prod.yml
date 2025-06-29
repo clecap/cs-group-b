@@ -9,7 +9,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile-prod
     ports:
-      - "8001:5000"
+      - "80:5000"
     depends_on:
       backend:
         condition: service_started

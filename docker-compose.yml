@@ -4,19 +4,19 @@ services:
     ports:
       - "8000:5000"
     environment:
-        FLASK_DEBUG : True
+      FLASK_DEBUG: True
     develop:
       watch:
         - action: rebuild
           path: ./backend/pyproject.toml
         - action: sync
           path: ./backend
-          target: /usr/src/app 
+          target: /usr/src/app
 
   frontend:
     build: ./frontend
     ports:
-      - "8001:5173"
+      - "80:5173"
     depends_on:
       backend:
         condition: service_started
