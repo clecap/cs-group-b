@@ -19,9 +19,5 @@ export default defineConfig({
   },
   server: {
     allowedHosts: ['feigefiatshamirdemo.ddns.net', 'localhost'],
-    https:{
-      key:'/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/fullchain.pem',
-      cert:'/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/privkey.pem',
-    }
   }
 })
