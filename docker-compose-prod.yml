@@ -9,8 +9,15 @@ services:
       context: ./frontend
       dockerfile: Dockerfile-prod
     ports:
-      - "80:5000"
+      - "443:5000"
     depends_on:
       backend:
         condition: service_started
       # can provide healthcheck in the backend image and provide service_healthy condition check in this image in future
+    volumes:
+      - type: bind
+        source: '/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/fullchain.pem'
+        target: '/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/fullchain.pem'
+      - type: bind
+        source: '/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/privkey.pem'
+        target: '/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/privkey.pem'
