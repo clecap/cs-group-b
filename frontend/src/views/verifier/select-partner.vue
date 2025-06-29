@@ -22,16 +22,22 @@ const provers = ref([
 
 const dummy_provers = ref([
 
-  { id: 1, name: 'Prover 1', keys: ['123001','1001'], reg_time: '2023-10-01 12:00:00' },
-  { id: 2, name: 'Prover 2', keys: ['123002','1002']  , reg_time: '2023-10-02 14:30:00' },
-  { id: 3, name: 'Prover 3', keys: ['123003','1003'] , reg_time: '2023-10-03 09:15:00' },
+  { id: 1, name: 'Prover 1', keys: ['123001','1001'], reg_time: '2023-10-01 12:00:00', status: 'available' },
+  { id: 2, name: 'Prover 2', keys: ['123002','1002']  , reg_time: '2023-10-02 14:30:00', status: 'not available' },
+  { id: 3, name: 'Prover 3', keys: ['123003','1003'] , reg_time: '2023-10-03 09:15:00' , status: 'available' },
 
 ]);
 
 
 const refreshProvers = () => {
-  // Simulate fetching provers from an API or socket
-  // In a real application, you would replace this with an actual API call
+
+
+
+
+///// #TODO We need to figure out how to ge tthe staus of the provers from the server
+
+/// one idea is that there must be an routing....kf237
+
   console.log('Refreshing provers...');
 
   socket.emit('getProvers'); // Request the latest provers from the server
@@ -39,17 +45,24 @@ const refreshProvers = () => {
 
   socket.on('proversUpdated', (data) => {
     console.log('Received updated provers:', data);
-    provers.value = data; // Update the provers with the received data
+    provers.value = data; 
   });
 
-  provers.value = dummy_provers.value; // Replace with actual data fetching logic
+  provers.value = dummy_provers.value; 
 
   console.log('Provers refreshed:', provers.value);
-  // You can also handle any additional logic here, such as showing a notification or updating the
+
 };
 
 
 const selectprover = (prover) => {
+
+  // if prover not available notify user
+  if (prover.status !== 'available') {
+    alert('Selected prover is not available. Please select another prover.');
+    return;
+  }
+
   console.log('Selected Prover:', prover);
   router.push('/verifier');
 
@@ -91,6 +104,7 @@ onMounted(() => {
               <th class="px-4 py-2 border-b">Username</th>
               <th class="px-4 py-2 border-b">Keys</th>
               <th class="px-4 py-2 border-b">Time registered</th>
+              <th class="px-4 py-2 border-b">Status</th>
               <th class="px-4 py-2 border-b">Action</th>
             </tr>
           </thead>
@@ -100,6 +114,11 @@ onMounted(() => {
               <td class="px-4 py-2 border-b">{{ prover.keys }}</td>
               <!-- replace with the ac  -->
               <td class="px-4 py-2 border-b">{{ prover.reg_time}}</td>
+              <td class="px-4 py-2 border-b">
+                <span :class="prover.status === 'available' ? 'text-green-600' : 'text-red-600'">
+                  {{ prover.status }}
+                </span>
+              </td>
               <td class="px-4 py-2 border-b">
                 <button
                   class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition"
@@ -128,9 +147,6 @@ onMounted(() => {
           >
             <span>Go Home</span>
             </button>
-          <button @click="DEBUG_go_verifier" class="ml-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition">
-            DEBUG verfier screen
-          </button>
         </div>
       </div>~
     </template>
