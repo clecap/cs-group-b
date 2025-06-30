@@ -69,9 +69,24 @@ const gcd = (a, b) => {
   return a;
 };
 
+// GCD for BigInt
+const gcdBigInt = (a, b) => {
+  while (b !== 0n) {
+    const temp = b;
+    b = a % b;
+    a = temp;
+  }
+  return a;
+};
+
 // Helper function to check if two numbers are coprime
 const areCoprime = (a, b) => {
   return gcd(a, b) === 1;
+};
+
+// Check if the number is too large for regular JavaScript numbers
+const isLargeNumber = (nStr) => {
+  return nStr.length > 15; // Numbers with more than 15 digits need BigInt
 };
 
 // Generate a random number that is coprime to n
@@ -81,6 +96,47 @@ const generateCoprimeNumber = (n) => {
     // Generate random number between 2 and n-1
     candidate = Math.floor(Math.random() * (n - 2)) + 2;
   } while (!areCoprime(candidate, n));
+  return candidate;
+};
+
+// For very large numbers, we need to use BigInt for calculations
+const generateCoprimeNumberBigInt = (nStr, minBits = 128) => {
+  const n = BigInt(nStr);
+  
+  // Calculate the minimum value for the required bit size
+  const minValue = BigInt(2) ** BigInt(minBits - 1); // 2^(bits-1)
+  const maxValue = BigInt(2) ** BigInt(minBits) - BigInt(1); // 2^bits - 1
+  
+  // Ensure we don't exceed n
+  const upperBound = maxValue < n ? maxValue : n - BigInt(1);
+  const lowerBound = minValue < upperBound ? minValue : BigInt(2);
+  
+  let candidate;
+  let attempts = 0;
+  const maxAttempts = 1000;
+  
+  do {
+    // Generate a random BigInt in the range [lowerBound, upperBound]
+    const range = upperBound - lowerBound;
+    const randomBits = range.toString(2).length;
+    
+    // Generate random bytes
+    let randomHex = '0x';
+    for (let i = 0; i < Math.ceil(randomBits / 8); i++) {
+      randomHex += Math.floor(Math.random() * 256).toString(16).padStart(2, '0');
+    }
+    
+    candidate = (BigInt(randomHex) % (range + BigInt(1))) + lowerBound;
+    attempts++;
+    
+    if (attempts > maxAttempts) {
+      console.warn('Could not find coprime after max attempts, using smaller number');
+      // Fallback to smaller number
+      candidate = BigInt(Math.floor(Math.random() * 1000000) + 1000);
+      break;
+    }
+  } while (gcdBigInt(candidate, n) !== 1n);
+  
   return candidate;
 };
 
@@ -100,39 +156,74 @@ const handleSecretsSubmit = () => {
     return;
   }
   
-  const n = parseInt(blumInteger.value);
-  if (isNaN(n)) {
-    errorMessage.value = 'Invalid Blum Integer';
-    return;
-  }
-  
-  // Generate coprime secrets
   const secrets = [];
   const usedValues = new Set();
   
-  for (let i = 0; i < numSecrets; i++) {
-    let secret;
-    do {
-      secret = generateCoprimeNumber(n);
-    } while (usedValues.has(secret)); // Ensure uniqueness
+  try {
+    if (isLargeNumber(blumInteger.value)) {
+      // Use BigInt for large numbers
+      const n = BigInt(blumInteger.value);
+      
+      // Determine appropriate bit size for secrets
+      // Use at least 128 bits, but scale up for very large Blum integers
+      const blumBits = blumInteger.value.length * Math.log2(10); // Approximate bit size
+      const secretBits = Math.max(128, Math.min(512, Math.floor(blumBits / 8))); // 128-512 bits
+      
+      console.log(`Generating ${secretBits}-bit secrets for ${blumBits.toFixed(0)}-bit Blum integer`);
+      
+      for (let i = 0; i < numSecrets; i++) {
+        let secret;
+        do {
+          secret = generateCoprimeNumberBigInt(blumInteger.value, secretBits);
+        } while (usedValues.has(secret.toString()));
+        
+        usedValues.add(secret.toString());
+        secrets.push(secret.toString());
+      }
+      
+      // Calculate public keys with BigInt
+      publicKeys.value = secrets.map((secretStr, index) => {
+        const secret = BigInt(secretStr);
+        const n = BigInt(blumInteger.value);
+        const t = (secret * secret) % n;
+        return {
+          index: index + 1,
+          secret: secretStr,
+          publicKey: t.toString()
+        };
+      });
+    } else {
+      // Use regular numbers for smaller Blum integers
+      const n = parseInt(blumInteger.value);
+      
+      for (let i = 0; i < numSecrets; i++) {
+        let secret;
+        do {
+          secret = generateCoprimeNumber(n);
+        } while (usedValues.has(secret)); // Ensure uniqueness
+        
+        usedValues.add(secret);
+        secrets.push(secret);
+      }
+      
+      // Calculate public keys
+      publicKeys.value = secrets.map((secret, index) => {
+        const t = (secret * secret) % n;
+        return {
+          index: index + 1,
+          secret: secret,
+          publicKey: t
+        };
+      });
+    }
     
-    usedValues.add(secret);
-    secrets.push(secret);
+    // Update the textarea with generated secrets
+    secretsText.value = secrets.join('\n');
+    errorMessage.value = '';
+  } catch (error) {
+    console.error('Error generating secrets:', error);
+    errorMessage.value = 'Error generating secrets. Try with fewer secrets or get a new Blum integer.';
   }
-  
-  // Update the textarea with generated secrets
-  secretsText.value = secrets.join('\n');
-  errorMessage.value = '';
-  
-  // Calculate public keys
-  publicKeys.value = secrets.map((secret, index) => {
-    const t = (secret * secret) % n;
-    return {
-      index: index + 1,
-      secret: secret,
-      publicKey: t
-    };
-  });
 };
 
 const copySecrets = () => {
@@ -141,6 +232,12 @@ const copySecrets = () => {
   }).catch(err => {
     console.error('Failed to copy:', err);
   });
+};
+
+// Format large numbers for display (show first 20...last 20 chars)
+const formatLargeNumber = (numStr) => {
+  if (!numStr || numStr.length <= 40) return numStr;
+  return numStr.substring(0, 20) + '...' + numStr.substring(numStr.length - 20);
 };
 
 const handleRegister = async () => {
@@ -223,7 +320,7 @@ const handleRegister = async () => {
         <!-- Blum Integer Section -->
         <div class="flex items-center space-x-4">
           <span class="font-medium">Blum integer, n:</span>
-          <span v-if="blumInteger" class="font-mono">{{ blumInteger }}</span>
+          <span v-if="blumInteger" class="font-mono text-sm break-all flex-1">{{ formatLargeNumber(blumInteger) }}</span>
           <button
             @click="handleGetBlumInteger"
             class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition"
@@ -291,9 +388,9 @@ const handleRegister = async () => {
             <div>t₂ = s₂² mod n = xxxx</div>
             <div>t₃ = s₃² mod n = xxxx</div>
           </div>
-          <div v-else class="font-mono text-sm space-y-1">
-            <div v-for="pk in publicKeys" :key="pk.index">
-              t{{ pk.index }} = {{ pk.secret }}² mod {{ blumInteger }} = {{ pk.publicKey }}
+          <div v-else class="font-mono text-sm space-y-1 max-h-48 overflow-y-auto">
+            <div v-for="pk in publicKeys" :key="pk.index" class="break-all">
+              t{{ pk.index }} = {{ pk.secret }}² mod {{ formatLargeNumber(blumInteger) }} = {{ pk.publicKey }}
             </div>
           </div>
         </div>
@@ -312,3 +409,10 @@ const handleRegister = async () => {
     </template>
   </BaseLayout>
 </template>
+
+<style scoped>
+/* Ensure very long numbers wrap properly */
+.break-all {
+  word-break: break-all;
+}
+</style>
