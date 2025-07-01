@@ -88,11 +88,11 @@ paths:
                     type: list 
                     example: [
                       {name: peggy1,
-                        keys: ['123','444'],
+                        keys: ['123,444'],
                         reg_time: '2023-10-01 12:00:00'
                       },
                       {name: peggy2,
-                        keys: ['135','888'],
+                        keys: ['135,888'],
                         reg_time: '2023-10-01 12:00:00'
                       }
                     ]

@@ -86,7 +86,7 @@ const selectprover = (prover) => {
     path: '/verifier', 
     query: { 
       proverName: prover.name, 
-      proverKeys: prover.keys.join(','), 
+      proverKeys: prover.keys, 
     } 
   });
 
