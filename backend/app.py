@@ -109,7 +109,7 @@ def user_info():
     return (dict(res), 200)
 
 
-@app.route("/getAllUsers")
+@app.route("/provers")
 def get_all_users():
     db = get_db()
     cur = db.cursor()
