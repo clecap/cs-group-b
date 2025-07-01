@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.vue';
 import { useRouter } from 'vue-router';
 import socket from '@/helpers/socket';
 import { ref, onMounted } from 'vue';
+import api from '@/helpers/api';
 
 const router = useRouter();
 
@@ -29,26 +30,34 @@ const dummy_provers = ref([
 ]);
 
 
-const refreshProvers = () => {
+
+const loadingProoverTable = ref(false);
+const errorMessage = ref('');
 
 
+const refreshProvers = async() => {
+
+  loadingProoverTable.value = true;
+  errorMessage.value = '';
+  
+  try {
+ 
+    const response = await api.get('/provers');
+    
+    console.log('API Response:', response.data); // Debug log
+    console.log('typeof response.data.provers:', typeof response.data.provers); // Debug log
+    provers.value = response.data.provers; 
+
+  } catch (error) {
+    console.error('Failed to load the table of provers', error);
+  
+    errorMessage.value = 'API error - using demo table of provers';
+    provers.value = dummy_provers.value; 
+  } finally {
+    loadingProoverTable.value = false;
+  }
 
 
-///// #TODO We need to figure out how to ge tthe staus of the provers from the server
-
-/// one idea is that there must be an routing....kf237
-
-  console.log('Refreshing provers...');
-
-  socket.emit('getProvers'); // Request the latest provers from the server
-
-
-  socket.on('proversUpdated', (data) => {
-    console.log('Received updated provers:', data);
-    provers.value = data; 
-  });
-
-  provers.value = dummy_provers.value; 
 
   console.log('Provers refreshed:', provers.value);
 
