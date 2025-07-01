@@ -66,11 +66,18 @@ const refreshProvers = async() => {
 
 const selectprover = (prover) => {
 
-  // if prover not available notify user
-  if (prover.status !== 'available') {
-    alert('Selected prover is not available. Please select another prover.');
-    return;
-  }
+
+  // disabled since this is not achievable yet
+  // ###########################
+
+  // // if prover not available notify user
+  // if (prover.status !== 'available') {
+  //   alert('Selected prover is not available. Please select another prover.');
+  //   return;
+  // }
+
+
+
 
   console.log('Selected Prover:', prover);
   router.push('/verifier');
@@ -113,7 +120,7 @@ onMounted(() => {
               <th class="px-4 py-2 border-b">Username</th>
               <th class="px-4 py-2 border-b">Keys</th>
               <th class="px-4 py-2 border-b">Time registered</th>
-              <th class="px-4 py-2 border-b">Status</th>
+              <!-- <th class="px-4 py-2 border-b">Status</th> -->
               <th class="px-4 py-2 border-b">Action</th>
             </tr>
           </thead>
