@@ -39,6 +39,8 @@ def get_db():
             cur.execute("SELECT name FROM sqlite_master WHERE name='user'").fetchone()
             is None
         ):
-            cur.execute("CREATE TABLE user(username PRIMARY KEY, pubKeys, blum)")
+            cur.execute(
+                "CREATE TABLE user(username PRIMARY KEY, pubKeys, blum, regTime)"
+            )  # mentioning datatype is optional in sqlite
 
     return db
