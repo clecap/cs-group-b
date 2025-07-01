@@ -109,5 +109,26 @@ def user_info():
     return (dict(res), 200)
 
 
+@app.route("/getAllUsers")
+def get_all_users():
+    db = get_db()
+    cur = db.cursor()
+
+    res = cur.execute("SELECT * FROM user").fetchall()
+
+    user_info_list = []
+
+    for userInfo in res:
+        user_info_list.append(
+            {
+                "name": userInfo[0],
+                "keys": userInfo[1],
+                "reg_time": userInfo[-1],
+            }
+        )
+
+    return ({"provers": user_info_list}, 200)
+
+
 if __name__ == "__main__":
     socketio.run(app, debug=True)
