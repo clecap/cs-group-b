@@ -3,6 +3,8 @@ import BaseLayout from '../../layouts/BaseLayout.vue';
 import { useRouter, useRoute } from 'vue-router';
 import socket from '@/helpers/socket';
 import { ref, onMounted } from 'vue';
+import api from '@/helpers/api';
+
 
 const router = useRouter();
 const route = useRoute();
@@ -18,23 +20,43 @@ const receivedCommitmentXMessage = ref('Commitment, x: xxxx');
 
 
 const yValue = ref('Waiting for y...');
+const xValue = ref(''); 
+const pubKeys= ref([]); 
+const challengeBits = ref([])
+const BlumInteger = ref(''); 
+
+
 const verificationResult = ref(null);
 const challengeMode = ref('auto');
 const manualChallenge = ref('');
 
 
+
+// Boolean flags to track the state of the verification process
+
+const user_info_received =ref(false);
+
 const public_keys_received = ref(false);
+
 const commitment_received = ref(false);
 const challenge_sent = ref(false);
 const y_received = ref(false);
 
+
+// boolean values for busy states..
+const loadingUserInfo = ref(false);
+
+
+//error messageplaceholder
+const errorMessage = ref('');
+
 const query = route.query
 console.log(query) // e.g., { search: 'vue', page: '2' }
 const proverName = query.proverName || 'Fallback_Prover'; // Get the username from the query params or use a fallback
-const proverKeys = query.proverKeys ? query.proverKeys.split(',') : []; // Get the public keys from the query params or use an empty array
+// const proverKeys = query.proverKeys ? query.proverKeys.split(',') : []; // Get the public keys from the query params or use an empty array
 
 
-const numberofKeys = ref(proverKeys.length); // Number of public keys, derived from the query params
+// const numberofKeys = ref(proverKeys.length); // Number of public keys, derived from the query params
 console.log('Number of public keys:', numberofKeys.value); // Debug log
 
 // const numberofKeys = ref(0); // Placeholder for number of public keys
@@ -54,7 +76,9 @@ console.log('Number of public keys:', numberofKeys.value); // Debug log
 
 onMounted(() => {
 
-  // getParams(); // Get the username from the query params
+
+  
+  handleGetUserInfo(); // Call the function to get user info on mount
 
   socket.on('public_keys_received', (data) => {
     receivedKeysMessage.value = 'Received public keys: ' + data.public_keys.join(', ');
@@ -71,6 +95,60 @@ onMounted(() => {
   });
 
 });
+
+
+const handleGetUserInfo = async () => {
+  loadingUserInfo.value = true;
+  errorMessage.value = '';
+
+
+  try {
+    const response = await api.get('user/info', {
+      params: {
+        username: proverName
+      }
+    })
+    console.log('API Response:', response.data); 
+
+    if (response.data.username != proverName) {
+      console.error("API error: received username not matching the send username")
+      alert("API error: received username not matching the send username")
+    }
+
+
+
+    pubKeys.value = response.data.pubKeys.split(','); // Split the comma-separated string into an array
+  
+
+    numberofKeys.value = pubKeys.value.length; // Update the number of public keys
+    console.log('Number of public keys:', numberofKeys.value); // Debug log
+
+
+
+    BlumInteger.value = response.data.blum; // Set the Blum integer
+    console.log('Blum Integer:', BlumInteger.value); // Debug log
+
+
+    user_info_received.value = true; // Set the flag to true after successfully receiving user info
+
+
+    ///tmp workaround....when i update the flow i will remove the variable
+    public_keys_received.value = true; //
+
+  }
+  catch (error) {
+    console.error('Failed to get the user info', error)
+    errorMessage.value = 'API error - GET of user info  failed'
+
+    /// i have no reasonable way to do any deafult values here...
+  }
+  finally {
+    loadingUserInfo.value = false;
+  }
+
+}
+
+
 
 
 
@@ -118,7 +196,7 @@ const generateRandomChallenge = () => {
         </div>
         <div class="space-y-2">
           <div  class="font-mono text-sm">
-            Using {{ numberofKeys }} public keys: {{ proverKeys.join(', ') }}
+            Using {{ numberofKeys }} public keys: {{ pubKeys.value.join(', ') }}
           </div>
      
 <!-- 
