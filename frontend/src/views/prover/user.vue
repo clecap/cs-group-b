@@ -174,7 +174,7 @@
             >x = y² × (t₁ᶜ¹ × t₂ᶜ² × … × t<sub>k</sub>ᶜᵏ)⁻¹ mod n</code
           >
           <p class="w-full text-center text-green-600 font-semibold mt-5">{{ forgedXDisplay }}
-            <button @click="onShowModal(forgedX, commitmentModalSubtitle)" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
+            <button v-if="forgedX" @click="onShowModal(forgedX, commitmentModalSubtitle)" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
               <i>i</i>
             </button>
           </p>
@@ -255,7 +255,7 @@ const forgedYModalSubtitle = 'Forged Y is:';
 const evilBits = ref('')
 const forgedY = ref(null)
 const forgedX = ref(null)
-const forgedXDisplay = ref('—')
+const forgedXDisplay = ref('')
 const sendForgedXStatus = ref('')
 
 
