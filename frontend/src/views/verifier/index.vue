@@ -1,10 +1,14 @@
 <script setup>
 import BaseLayout from '../../layouts/BaseLayout.vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import socket from '@/helpers/socket';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
+import api from '@/helpers/api';
+
 
 const router = useRouter();
+const route = useRoute();
+import demo_values from '@/helpers/demo_values.json';
 
 const goHome = () => {
   router.push('/');
@@ -16,26 +20,107 @@ const receivedKeysMessage = ref('Public keys t₁, t₂, t₃ = xxxx, xxxx, xxxx
 const receivedCommitmentXMessage = ref('Commitment, x: xxxx');
 
 
+
+
 const yValue = ref('Waiting for y...');
+const xValue = ref(''); 
+const pubKeys= ref([]); 
+const joinedPubKeys = computed(() => pubKeys.value.join(', '));
+
+const BlumInteger = ref(''); 
+const numberofKeys = ref(0); // Placeholder for number of public keys
+const challenge_bit_str = ref('');
+const challengeBits = computed(() => {
+  // Convert the challenge bit string to an array of strings
+  return challenge_bit_str.value.split('').map(bit => bit.toString());
+});
+
 const verificationResult = ref(null);
 const challengeMode = ref('auto');
 const manualChallenge = ref('');
 
 
+// Boolean flags to track the state of the verification process
+
+const user_info_received =ref(false);
+
 const public_keys_received = ref(false);
+
 const commitment_received = ref(false);
 const challenge_sent = ref(false);
 const y_received = ref(false);
 
 
+// boolean values for busy states..
+const loadingUserInfo = ref(false);
 
-// This value is set whent he public keys are received.....
-// ALSO used for challenge!!!!!
 
-const numberofKeys = ref(0); // Placeholder for number of public keys
+//error messageplaceholder
+const errorMessage = ref('');
 
+const query = route.query
+console.log(query) // e.g., { search: 'vue', page: '2' }
+const proverName = query.proverName || 'Fallback_Prover'; // Get the username from the query params or use a fallback
+
+
+// getParams = () => {
+// //get the username from the query params
+// const query = router.currentRoute.value.query;
+// if (query && query.proverName) {
+//   prooverName.value = query.proverName; // Set the username from the query parameter
+// } else {
+//   prooverName.value = 'Fallback_Prover'; // Default value if not provided
+// }
+// };
+
+const button_y_received = () => {
+  // Simulate receiving y value
+ 
+  y_received.value = true;
+  yValue.value = demo_values.y;
+
+
+  console.log('Simulated y value:', yValue.value);
+  console.log('Commitment x value:', xValue.value);
+  console.log('Public keys:', pubKeys.value);
+  console.log('Challenge bits:', challengeBits.value);
+
+  // Trigger verification after receiving y
+  verification(
+    yValue.value,
+    xValue.value,
+    pubKeys.value,
+    challengeBits.value,
+    BlumInteger.value
+  )
+  console.log('Verification result:', verificationResult.value);
+};
+
+
+const button_x_Received = () => {
+  // Simulate receiving commitment x value
+  commitment_received.value = true;
+  xValue.value = demo_values.x; // Example value
+  receivedCommitmentXMessage.value = 'Received commitment x: ' + xValue.value;
+
+  console.log('Simulated commitment x value:', xValue.value);
+};
+
+
+const button_view_verifcation =() => {
+ console.log('showing verifcation results');
+ // this is jsut a stub for now...
+};
+const button_acknowledge_public_keys = () => {
+  // this is just a stub for now...
+  console.log('Simulated public keys:', pubKeys.value);
+};
 
 onMounted(() => {
+
+
+  
+  handleGetUserInfo(); // Call the function to get user info on mount
 
   socket.on('public_keys_received', (data) => {
     receivedKeysMessage.value = 'Received public keys: ' + data.public_keys.join(', ');
@@ -44,26 +129,91 @@ onMounted(() => {
   socket.on('y_received', (data) => {
     yValue.value = `Receive y value: ${data.y}`;
     y_received.value = true;
+
+    // Trigger verification after receiving y
+    verification(
+      y = yValue.value,
+      x = xValue.value,
+      t = pubKeys.value,
+      c = challengeBits.value,
+      n = BlumInteger.value
+    )
+    console.log('Verification result:', verificationResult.value);
   });
 
   socket.on('publish_commitment_x', (data) => {
     receivedCommitmentXMessage.value = 'Received commitment x: ' + data.commitment_x;
+    xValue.value = data.commitment_x; 
     commitment_received.value = true;
   });
 
 });
 
 
+const handleGetUserInfo = async () => {
+  loadingUserInfo.value = true;
+  errorMessage.value = '';
+
+
+  try {
+    const response = await api.get('user/info', {
+      params: {
+        username: proverName
+      }
+    })
+    console.log('API Response:', response.data); 
+
+    if (response.data.username != proverName) {
+      console.error("API error: received username not matching the send username")
+      alert("API error: received username not matching the send username")
+    }
+
+
+
+    pubKeys.value = response.data.pubKeys.split(','); // Split the comma-separated string into an array
+  
+
+    numberofKeys.value = pubKeys.value.length; // Update the number of public keys
+    console.log('Number of public keys:', numberofKeys.value); // Debug log
+
+
+
+    BlumInteger.value = response.data.blum; // Set the Blum integer
+    console.log('Blum Integer:', BlumInteger.value); // Debug log
+
+
+    user_info_received.value = true; // Set the flag to true after successfully receiving user info
+
+
+    ///tmp workaround....when i update the flow i will remove the variable
+    public_keys_received.value = true; //
+    
+  }
+  catch (error) {
+    console.error('Failed to get the user info', error)
+    errorMessage.value = 'API error - GET of user info  failed'
+
+    /// i have no reasonable way to do any deafult values here...
+  }
+  finally {
+    loadingUserInfo.value = false;
+  }
+
+}
+
+
+
+
 
 
 const sendChallenge = () => {
+
   if (challengeMode.value === 'manual' && manualChallenge.value) {
-    socket.emit('send_challenge', { challenge: manualChallenge.value });
-    manualChallenge.value = ''; // Clear input
+    challenge_bit_str.value = manualChallenge.value; // Store the manual challenge
   } else if (challengeMode.value === 'auto') {
-    const autoChallenge = generateRandomChallenge(); // Implement this function
-    socket.emit('send_challenge', { challenge: autoChallenge });
+    challenge_bit_str.value= generateRandomChallenge(); 
   }
+  socket.emit('send_challenge', { challenge: challenge_bit_str.value });
   challenge_sent.value = true;
 };
 
@@ -75,10 +225,70 @@ const generateRandomChallenge = () => {
   for (let i = 0; i < length; i++) {
     challenge += Math.random() < 0.5 ? '0' : '1';
   }
+  if (demo_values.username === 'demo_peggy' ){
+    // if demo user use the demo challenge
+    challenge = demo_values.challenge_bits;
+    // convert to string  ( this depends on hwo the demovalues are set up)
+    challenge = challenge.toString();
+  }
   return challenge;
 
 
 };
+
+
+const verification = (y,x,t,c,n) => {
+  // y: received y value
+  // x: commitment x value
+  // t: array of public keys (t₁, t₂, t₃, ...)
+  // c: challenge bits (array of string of 0s and 1s)
+  // n: Blum integer
+
+
+/// checking that the values are the correct type...
+  y = Number(y);
+  x = Number(x);
+  n = Number(n);
+  t = t.map(Number); // Convert each public key to a number
+  c = c.map(String); // Ensure challenge bits are strings 
+
+
+
+  console.log('Verification called with:');
+  console.log('y:', y);
+  console.log('x:', x);
+  console.log('t:', t);
+  console.log('c:', c);
+  console.log('n:', n);
+
+
+
+  console.log('Type of y:', typeof y);
+  console.log('Type of x:', typeof x);
+  console.log('Type of t:', Array.isArray(t) ? 'Array' : typeof t);
+  console.log('Type of c:', Array.isArray(c) ? 'Array' : typeof c);
+  console.log('Type of n:', typeof n);
+
+  const ySquaredModN = (y * y) % n;
+  
+  
+  let productModN = x;
+
+  for (let i = 0; i < t.length; i++) {
+    if (c[i] === '1') {
+      productModN = (productModN * t[i]) % n;
+    }
+  }
+
+  const success = (ySquaredModN === productModN);
+  
+  verificationResult.value = {
+    success,
+    ySquaredModN,
+    productModN
+  };
+};
+
 
 </script>
 
@@ -91,11 +301,23 @@ const generateRandomChallenge = () => {
     <template #default>
       <div class="max-w-md mx-auto mt-8 space-y-6">
         <!-- Public Keys Section -->
+        
+        <div class="space-y-4">
+          <span class="text-lg font-semibold">
+            Verifying for <span class="text-green-600 font-bold">{{ proverName }}</span>
+          </span>
+        </div>
         <div class="space-y-2">
-
+          <div v-if="user_info_received" class="font-mono text-sm">
+            Using {{ numberofKeys }} public keys: {{ joinedPubKeys }}
+          </div>
+     
+<!-- 
 
           <div v-if="public_keys_received" class="text-gray-700"> received n public keys</div>
           <div v-else class="text-gray-700">Waiting for public keys.......</div>
+
+             -->
 
           <!-- <div class="font-mono text-sm">
             <p>{{ receivedKeysMessage }}</p>
@@ -306,25 +528,25 @@ const generateRandomChallenge = () => {
         </div>
         <div class="flex justify-center mt-8 space-x-2">
           <button
-            @click="public_keys_received = true"
+            @click="button_acknowledge_public_keys"
             class="px-3 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-800 transition font-medium"
           >
-            Receive pub key 
+            Acknowledge public keys
           </button>
           <button
-            @click="commitment_received = true"
+            @click="button_x_Received"
             class="px-3 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-800 transition font-medium"
           >
             Receive commitment
           </button>
           <button
-            @click="y_received = true"
+            @click="button_y_received"
             class="px-3 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-800 transition font-medium"
           >
             Receive y
           </button>
           <button
-            @click="verificationResult = { success: true, ySquaredModN: '...', productModN: '...' }"
+            @click="button_view_verifcation"
             class="px-3 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-800 transition font-medium"
           >
             Verification Result

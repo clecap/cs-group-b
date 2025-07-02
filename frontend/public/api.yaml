@@ -69,6 +69,33 @@ paths:
                 $ref: '#/components/schemas/user'
             string:
               example: 'Username does not exist'
+
+  /provers:
+    get:
+      tags:
+        - provers
+      summary: Get all registered users (Peggy).
+      description: Returns a table of all registered users.
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  provers:
+                    type: list 
+                    example: [
+                      {name: peggy1,
+                        keys: ['123,444'],
+                        reg_time: '2023-10-01 12:00:00'
+                      },
+                      {name: peggy2,
+                        keys: ['135,888'],
+                        reg_time: '2023-10-01 12:00:00'
+                      }
+                    ]
           
 components:
   schemas:

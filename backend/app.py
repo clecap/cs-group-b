@@ -1,3 +1,4 @@
+import datetime
 from flask import Flask, send_from_directory, jsonify
 from flask_socketio import SocketIO, emit
 import os
@@ -6,29 +7,34 @@ from flask import g
 from configparser import ConfigParser
 from flask import request
 from flask_cors import CORS
+import datetime
 
-
-app = Flask(__name__, static_folder='../frontend', static_url_path='')
+app = Flask(__name__, static_folder="../frontend", static_url_path="")
 CORS(app)
 app.secret_key = os.urandom(24)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-@app.route('/')
+
+@app.route("/")
 def home():
-    return send_from_directory(app.static_folder, 'index.html')
+    return send_from_directory(app.static_folder, "index.html")
 
-@app.route('/prover/<string:username>')
+
+@app.route("/prover/<string:username>")
 def index(username):
-    return send_from_directory(app.static_folder, 'index.html')
+    return send_from_directory(app.static_folder, "index.html")
 
-@socketio.on('publish_public_keys')
+
+@socketio.on("publish_public_keys")
 def publishPublicKeys(data):
-    emit('public_keys_received', data, broadcast=True)
+    emit("public_keys_received", data, broadcast=True)
 
-@socketio.on('publish_commitment_x')
+
+@socketio.on("publish_commitment_x")
 def handleX(data):
-    emit('publish_commitment_x', data, broadcast=True)
-    
+    emit("publish_commitment_x", data, broadcast=True)
+
+
 # close db connection after every request
 @app.teardown_appcontext
 def close_connection(exception):
@@ -76,7 +82,9 @@ def register_user():
     if user is not None:
         return ("user already exists", 406)
 
-    cur.execute("INSERT INTO user VALUES (:username,:pubKeys,:blum)", data)
+    data["regTime"] = datetime.datetime.now()
+
+    cur.execute("INSERT INTO user VALUES (:username,:pubKeys,:blum, :regTime)", data)
     db.commit()
     return ("Success", 200)
 
@@ -100,5 +108,27 @@ def user_info():
 
     return (dict(res), 200)
 
-if __name__ == '__main__':
+
+@app.route("/provers")
+def get_all_users():
+    db = get_db()
+    cur = db.cursor()
+
+    res = cur.execute("SELECT * FROM user").fetchall()
+
+    user_info_list = []
+
+    for userInfo in res:
+        user_info_list.append(
+            {
+                "name": userInfo[0],
+                "keys": userInfo[1],
+                "reg_time": userInfo[-1],
+            }
+        )
+
+    return ({"provers": user_info_list}, 200)
+
+
+if __name__ == "__main__":
     socketio.run(app, debug=True)

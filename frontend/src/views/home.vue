@@ -9,7 +9,7 @@ const navigateToProver = () => {
 };
 
 const navigateToVerifier = () => {
-  router.push('/verifier');
+  router.push('/verifier/select-partner');
 };
 </script>
 
