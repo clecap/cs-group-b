@@ -36,7 +36,12 @@ const router = createRouter({
       path: '/prover/:user',
       name: 'ProverUser',
       component: () => import('../views/prover/user.vue')
-    }
+    },
+    {
+      path: '/verifier/select-partner',
+      name: 'VerifierSelectPartner',
+      component: () => import('../views/verifier/select-partner.vue')
+    },
   ],
 })
 

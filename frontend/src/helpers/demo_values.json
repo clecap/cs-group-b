@@ -1,0 +1,15 @@
+{
+  "username": "demo_peggy",
+  "p": 7,
+  "q": 11,
+  "blum": 77,
+  "secretKeys": [3],
+  "publicKeys": [9],
+  "r": 5,
+  "x": 25,
+  "challenge_bits": 1,
+  "y": 15,
+  "y^2 mod n": 71,
+  "x * v mod n": 71
+}
+

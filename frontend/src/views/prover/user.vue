@@ -267,9 +267,9 @@ const isInvalid = computed(() =>
   evilBits.value.length > 0 && (!correctLength.value || !onlyBinary.value)
 )
 
-socket.on('challenge_bits_received', ({challenge_bits}) => {
-  if(challenge_bits) {
-    challengeBits.value = challenge_bits.split('').map(Number);
+socket.on('challenge_bits_received', (data) => {
+  if(data.challenge) {
+    challengeBits.value = data.challenge.split('').map(Number);
     challengeBitsLoading.value = false;
   }
 })
