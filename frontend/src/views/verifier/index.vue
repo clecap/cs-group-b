@@ -20,19 +20,24 @@ const receivedKeysMessage = ref('Public keys t₁, t₂, t₃ = xxxx, xxxx, xxxx
 const receivedCommitmentXMessage = ref('Commitment, x: xxxx');
 
 
+
+
 const yValue = ref('Waiting for y...');
 const xValue = ref(''); 
 const pubKeys= ref([]); 
 const joinedPubKeys = computed(() => pubKeys.value.join(', '));
-const challengeBits = ref([])
+
 const BlumInteger = ref(''); 
 const numberofKeys = ref(0); // Placeholder for number of public keys
-
+const challenge_bit_str = ref('');
+const challengeBits = computed(() => {
+  // Convert the challenge bit string to an array of strings
+  return challenge_bit_str.value.split('').map(bit => bit.toString());
+});
 
 const verificationResult = ref(null);
 const challengeMode = ref('auto');
 const manualChallenge = ref('');
-
 
 
 // Boolean flags to track the state of the verification process
@@ -86,6 +91,7 @@ const button_y_received = () => {
     xValue.value,
     pubKeys.value,
     challengeBits.value,
+    BlumInteger.value
   )
   console.log('Verification result:', verificationResult.value);
 };
@@ -127,9 +133,10 @@ onMounted(() => {
     // Trigger verification after receiving y
     verification(
       y = yValue.value,
-      x =xValue.value,
+      x = xValue.value,
       t = pubKeys.value,
       c = challengeBits.value,
+      n = BlumInteger.value
     )
     console.log('Verification result:', verificationResult.value);
   });
@@ -200,13 +207,13 @@ const handleGetUserInfo = async () => {
 
 
 const sendChallenge = () => {
+
   if (challengeMode.value === 'manual' && manualChallenge.value) {
-    socket.emit('send_challenge', { challenge: manualChallenge.value });
-    manualChallenge.value = ''; // Clear input
+    challenge_bit_str.value = manualChallenge.value; // Store the manual challenge
   } else if (challengeMode.value === 'auto') {
-    const autoChallenge = generateRandomChallenge(); // Implement this function
-    socket.emit('send_challenge', { challenge: autoChallenge });
+    challenge_bit_str.value= generateRandomChallenge(); 
   }
+  socket.emit('send_challenge', { challenge: challenge_bit_str.value });
   challenge_sent.value = true;
 };
 
@@ -220,7 +227,9 @@ const generateRandomChallenge = () => {
   }
   if (demo_values.username === 'demo_peggy' ){
     // if demo user use the demo challenge
-    challenge = demo_values.challenge;
+    challenge = demo_values.challenge_bits;
+    // convert to string  ( this depends on hwo the demovalues are set up)
+    challenge = challenge.toString();
   }
   return challenge;
 
@@ -231,11 +240,38 @@ const generateRandomChallenge = () => {
 const verification = (y,x,t,c,n) => {
   // y: received y value
   // x: commitment x value
-  // t: array of t values
-  // c: challenge bits
+  // t: array of public keys (t₁, t₂, t₃, ...)
+  // c: challenge bits (array of string of 0s and 1s)
   // n: Blum integer
 
+
+/// checking that the values are the correct type...
+  y = Number(y);
+  x = Number(x);
+  n = Number(n);
+  t = t.map(Number); // Convert each public key to a number
+  c = c.map(String); // Ensure challenge bits are strings 
+
+
+
+  console.log('Verification called with:');
+  console.log('y:', y);
+  console.log('x:', x);
+  console.log('t:', t);
+  console.log('c:', c);
+  console.log('n:', n);
+
+
+
+  console.log('Type of y:', typeof y);
+  console.log('Type of x:', typeof x);
+  console.log('Type of t:', Array.isArray(t) ? 'Array' : typeof t);
+  console.log('Type of c:', Array.isArray(c) ? 'Array' : typeof c);
+  console.log('Type of n:', typeof n);
+
   const ySquaredModN = (y * y) % n;
+  
+  
   let productModN = x;
 
   for (let i = 0; i < t.length; i++) {
