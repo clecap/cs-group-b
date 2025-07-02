@@ -8,6 +8,7 @@ import api from '@/helpers/api';
 
 const router = useRouter();
 const route = useRoute();
+import demo_values from '@/helpers/demo_values.json';
 
 const goHome = () => {
   router.push('/');
@@ -67,6 +68,47 @@ const proverName = query.proverName || 'Fallback_Prover'; // Get the username fr
 // }
 // };
 
+const button_y_received = () => {
+  // Simulate receiving y value
+ 
+  y_received.value = true;
+  yValue.value = demo_values.y;
+
+
+  console.log('Simulated y value:', yValue.value);
+  console.log('Commitment x value:', xValue.value);
+  console.log('Public keys:', pubKeys.value);
+  console.log('Challenge bits:', challengeBits.value);
+
+  // Trigger verification after receiving y
+  verification(
+    yValue.value,
+    xValue.value,
+    pubKeys.value,
+    challengeBits.value,
+  )
+  console.log('Verification result:', verificationResult.value);
+};
+
+
+const button_x_Received = () => {
+  // Simulate receiving commitment x value
+  commitment_received.value = true;
+  xValue.value = demo_values.x; // Example value
+  receivedCommitmentXMessage.value = 'Received commitment x: ' + xValue.value;
+
+  console.log('Simulated commitment x value:', xValue.value);
+};
+
+
+const button_view_verifcation =() => {
+ console.log('showing verifcation results');
+ // this is jsut a stub for now...
+};
+const button_acknowledge_public_keys = () => {
+  // this is just a stub for now...
+  console.log('Simulated public keys:', pubKeys.value);
+};
 
 onMounted(() => {
 
@@ -81,6 +123,15 @@ onMounted(() => {
   socket.on('y_received', (data) => {
     yValue.value = `Receive y value: ${data.y}`;
     y_received.value = true;
+
+    // Trigger verification after receiving y
+    verification(
+      y = yValue.value,
+      x =xValue.value,
+      t = pubKeys.value,
+      c = challengeBits.value,
+    )
+    console.log('Verification result:', verificationResult.value);
   });
 
   socket.on('publish_commitment_x', (data) => {
@@ -129,7 +180,7 @@ const handleGetUserInfo = async () => {
 
     ///tmp workaround....when i update the flow i will remove the variable
     public_keys_received.value = true; //
-
+    
   }
   catch (error) {
     console.error('Failed to get the user info', error)
@@ -166,6 +217,10 @@ const generateRandomChallenge = () => {
   let challenge = '';
   for (let i = 0; i < length; i++) {
     challenge += Math.random() < 0.5 ? '0' : '1';
+  }
+  if (demo_values.username === 'demo_peggy' ){
+    // if demo user use the demo challenge
+    challenge = demo_values.challenge;
   }
   return challenge;
 
@@ -437,25 +492,25 @@ const verification = (y,x,t,c,n) => {
         </div>
         <div class="flex justify-center mt-8 space-x-2">
           <button
-            @click="public_keys_received = true"
+            @click="button_acknowledge_public_keys"
             class="px-3 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-800 transition font-medium"
           >
-            Receive pub key 
+            Acknowledge public keys
           </button>
           <button
-            @click="commitment_received = true"
+            @click="button_x_Received"
             class="px-3 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-800 transition font-medium"
           >
             Receive commitment
           </button>
           <button
-            @click="y_received = true"
+            @click="button_y_received"
             class="px-3 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-800 transition font-medium"
           >
             Receive y
           </button>
           <button
-            @click="verificationResult = { success: true, ySquaredModN: '...', productModN: '...' }"
+            @click="button_view_verifcation"
             class="px-3 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-800 transition font-medium"
           >
             Verification Result

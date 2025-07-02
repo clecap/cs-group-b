@@ -5,6 +5,8 @@ import socket from '@/helpers/socket';
 import { ref, onMounted } from 'vue';
 import api from '@/helpers/api';
 
+import demo_values from '@/helpers/demo_values.json';
+
 const router = useRouter();
 
 const goHome = () => {
@@ -93,6 +95,66 @@ const selectprover = (prover) => {
 
 };
 
+
+const username = ref(demo_values.username || 'demo_peggy'); 
+const blumInteger = ref(demo_values.blum || 77);
+
+const register_demo_peggy = async () => {
+
+
+  try {
+    // Prepare the payload according to the API spec
+    const payload = {
+      username: username.value,
+      pubKeys:  demo_values.publicKeys || [9], // Use demo values or default
+      blum: blumInteger.value || 77 
+    };
+
+
+    // Convert pubKeys to a comma-separated string
+    payload.pubKeys = payload.pubKeys.join(','); 
+    
+    
+    console.log('Registering with payload:', payload);
+    
+    // Call the correct endpoint
+    const response = await api.post('/user/register', payload);
+    
+    console.log('Registration response:', response.data);
+    
+    // // On success, navigate to the prover page
+    // router.push(`/prover/${username.value}`);
+  } catch (error) {
+    console.error('Registration failed:', error);
+    console.error('Error response:', error.response);
+    
+    if (error.response) {
+      console.error('Error data:', error.response.data);
+      console.error('Error status:', error.response.status);
+      
+      // Handle specific error codes
+      if (error.response.status === 406) {
+        errorMessage.value = 'User already exists. Please choose a different username.';
+      } else {
+        errorMessage.value = error.response.data?.message || 
+                            error.response.data || 
+                            `Registration failed (${error.response.status})`;
+      }
+    } else if (error.request) {
+      errorMessage.value = 'No response from server. Please check your connection.';
+    } else {
+      errorMessage.value = 'Registration failed. Please try again.';
+    }
+  }
+};
+
+
+
+
+
+
+
+
 onMounted(() => {
 
 
@@ -147,25 +209,31 @@ onMounted(() => {
             </tr>
           </tbody>
         </table>
-            <div class="flex justify-center mt-4">
-      <button
-        @click="refreshProvers"
-        class="border border-blue-500 text-blue-500 rounded-xl p-3 flex items-center hover:bg-blue-100 transition cursor-pointer w-48 justify-center mr-4"
-      >
-        <span>Refresh Provers</span>
-      </button>
-    </div>
-
-
+        <div class="flex justify-center mt-4">
+          <button
+            @click="refreshProvers"
+            class="border border-blue-500 text-blue-500 rounded-xl p-3 flex items-center hover:bg-blue-100 transition cursor-pointer w-48 justify-center mr-4"
+          >
+            <span>Refresh Provers</span>
+          </button>
+        </div>
         <div class="flex justify-center mt-4">
           <button 
             @click="goHome" 
-             class="border border-black rounded-xl p-3 flex items-center hover:bg-gray-100 transition cursor-pointer w-48 justify-center"    
+              class="border border-black rounded-xl p-3 flex items-center hover:bg-gray-100 transition cursor-pointer w-48 justify-center"    
           >
             <span>Go Home</span>
             </button>
         </div>
-      </div>~
+        <div class="flex justify-center mt-4">
+          <button 
+            @click="register_demo_peggy" 
+              class="border border-black rounded-xl p-3 flex items-center hover:bg-gray-100 transition cursor-pointer w-48 justify-center"    
+          >
+            <span>DEBUG add fake user</span>
+            </button>
+        </div>
+      </div>
     </template>
   </BaseLayout>
 </template>
