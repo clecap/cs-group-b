@@ -85,6 +85,7 @@ onMounted(() => {
 
   socket.on('publish_commitment_x', (data) => {
     receivedCommitmentXMessage.value = 'Received commitment x: ' + data.commitment_x;
+    xValue.value = data.commitment_x; 
     commitment_received.value = true;
   });
 
@@ -170,6 +171,33 @@ const generateRandomChallenge = () => {
 
 
 };
+
+
+const verification = (y,x,t,c,n) => {
+  // y: received y value
+  // x: commitment x value
+  // t: array of t values
+  // c: challenge bits
+  // n: Blum integer
+
+  const ySquaredModN = (y * y) % n;
+  let productModN = x;
+
+  for (let i = 0; i < t.length; i++) {
+    if (c[i] === '1') {
+      productModN = (productModN * t[i]) % n;
+    }
+  }
+
+  const success = (ySquaredModN === productModN);
+  
+  verificationResult.value = {
+    success,
+    ySquaredModN,
+    productModN
+  };
+};
+
 
 </script>
 
