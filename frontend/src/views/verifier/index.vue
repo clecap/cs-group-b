@@ -126,8 +126,8 @@ onMounted(() => {
     receivedKeysMessage.value = 'Received public keys: ' + data.public_keys.join(', ');
     public_keys_received.value = true;
   });
-  socket.on('y_received', (data) => {
-    yValue.value = `Receive y value: ${data.y}`;
+  socket.on('publish_response_y', (data) => {
+    yValue.value = `Receive y value: ${data.response_y}`;
     y_received.value = true;
 
     // Trigger verification after receiving y
@@ -425,7 +425,7 @@ const verification = (y,x,t,c,n) => {
         <!-- Waiting for Y -->
         <div v-if="challenge_sent" class="space-y-2">
           <div v-if="y_received" class="font-mono text-sm">
-            Receive y value: xxxx
+            <p>{{ yValue }}</p>
           </div>
           <div v-else class="text-gray-700">Waiting for y......</div>
         </div>
