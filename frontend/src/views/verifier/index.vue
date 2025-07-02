@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.vue';
 import { useRouter, useRoute } from 'vue-router';
 import socket from '@/helpers/socket';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import api from '@/helpers/api';
 
 
@@ -22,8 +22,10 @@ const receivedCommitmentXMessage = ref('Commitment, x: xxxx');
 const yValue = ref('Waiting for y...');
 const xValue = ref(''); 
 const pubKeys= ref([]); 
+const joinedPubKeys = computed(() => pubKeys.value.join(', '));
 const challengeBits = ref([])
 const BlumInteger = ref(''); 
+const numberofKeys = ref(0); // Placeholder for number of public keys
 
 
 const verificationResult = ref(null);
@@ -53,14 +55,6 @@ const errorMessage = ref('');
 const query = route.query
 console.log(query) // e.g., { search: 'vue', page: '2' }
 const proverName = query.proverName || 'Fallback_Prover'; // Get the username from the query params or use a fallback
-// const proverKeys = query.proverKeys ? query.proverKeys.split(',') : []; // Get the public keys from the query params or use an empty array
-
-
-// const numberofKeys = ref(proverKeys.length); // Number of public keys, derived from the query params
-console.log('Number of public keys:', numberofKeys.value); // Debug log
-
-// const numberofKeys = ref(0); // Placeholder for number of public keys
-
 
 
 // getParams = () => {
@@ -195,8 +189,8 @@ const generateRandomChallenge = () => {
           </span>
         </div>
         <div class="space-y-2">
-          <div  class="font-mono text-sm">
-            Using {{ numberofKeys }} public keys: {{ pubKeys.value.join(', ') }}
+          <div v-if="user_info_received" class="font-mono text-sm">
+            Using {{ numberofKeys }} public keys: {{ joinedPubKeys }}
           </div>
      
 <!-- 

@@ -86,7 +86,8 @@ const selectprover = (prover) => {
     path: '/verifier', 
     query: { 
       proverName: prover.name, 
-      proverKeys: prover.keys, 
+      // proverKeys: prover.keys,
+      // the keys are now retrieved from the server via the API endpoint 
     } 
   });
 
