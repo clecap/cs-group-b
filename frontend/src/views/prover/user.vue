@@ -45,7 +45,12 @@
           </button>
         </div>
 
-        <p v-if="coprimeR" class="w-full text-center text-green-600 font-semibold">✓ Random coprime generated!</p>
+        <p v-if="coprimeR" class="w-full text-center text-green-600 font-semibold">
+          ✓ Random coprime generated!
+          <button @click="onShowModal(coprimeR, coprimeModalSubtitle)" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
+            <i>i</i>
+          </button>
+        </p>
 
         <button
           @click="computeX"
@@ -56,7 +61,12 @@
 
         <p class="text-center">
           <code>x = r² mod n</code><br />
-          <p class="w-full text-center text-green-600 font-semibold">{{ xDisplay }}</p>
+          <p class="w-full text-center text-green-600 font-semibold" v-if="commitmentX">
+            {{ xDisplay }}
+          <button @click="onShowModal(commitmentX, commitmentModalSubtitle)" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
+            <i>i</i>
+          </button>
+          </p>
         </p>
 
         <button
@@ -101,7 +111,12 @@
           <code
             >y = r × s₁ᶜ¹ × s₂ᶜ² × … × s<sub>k</sub>ᶜᵏ mod n</code
           ><br />
-          <p class="block w-full text-center text-green-600 font-semibold">{{ yDisplay }}</p>
+          <p class="w-full text-center text-green-600 font-semibold">
+            {{ yDisplay }}
+            <button v-if="responseY" @click="onShowModal(responseY, yModalSubtitle)" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
+              <i>i</i>
+            </button>
+            </p>
         </p>
 
         <button
@@ -126,7 +141,12 @@
           </button>
         </div>
 
-        <p v-if="forgedY" class="w-full text-center text-green-600 font-semibold">✓ Forged Y generated</p>
+        <p v-if="forgedY" class="w-full text-center text-green-600 font-semibold">
+          ✓ Forged Y generated
+          <button @click="onShowModal(forgedY, forgedYModalSubtitle)" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
+            <i>i</i>
+          </button>
+        </p>
 
         <div class="flex items-center">
           <span class="flex-1">Set challenge bits, c:</span>
@@ -153,7 +173,11 @@
           <code
             >x = y² × (t₁ᶜ¹ × t₂ᶜ² × … × t<sub>k</sub>ᶜᵏ)⁻¹ mod n</code
           >
-          <p class="w-full text-center text-green-600 font-semibold mt-5">{{ forgedXDisplay }}</p>
+          <p class="w-full text-center text-green-600 font-semibold mt-5">{{ forgedXDisplay }}
+            <button v-if="forgedX" @click="onShowModal(forgedX, commitmentModalSubtitle)" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
+              <i>i</i>
+            </button>
+          </p>
         </p>
 
         <button
@@ -185,6 +209,10 @@
         <p class="block w-full text-center text-green-600 font-semibold">{{ ySendStatusText }}</p>
       </div>
     </div>
+
+    <!-- Modal -->
+    <InfoModal :visible="showModal" @close="showModal = false" :content="content" :subtitle="modalSubtitle"/>
+  
   </BaseLayout>
 </template>
 
@@ -195,7 +223,7 @@ import socket from '@/helpers/socket';
 import BaseLayout from '@/layouts/BaseLayout.vue';
 import { checkUserRegistered, generateRandomCoprime, forgeCommitment } from '@/helpers/utility'
 import bigInt from 'big-integer';
-
+import InfoModal from '@/components/InfoModal.vue'
 
 
 const route = useRoute()
@@ -203,22 +231,31 @@ const username = ref('Username')
 const useVerifiersBits = ref(false)
 const coprimeR = ref(null)
 const commitmentX = ref(null)
-const xDisplay = ref('—')
+const xDisplay = ref('')
 const secrets = ref('')
 const challengeBits = ref([])
-const yDisplay = ref('—')
+const yDisplay = ref('')
 const responseY = ref('')
 const blumN = ref(null)
 const pubKeys = ref([])
 const ySendStatusText = ref('')
 const numberOfChallengeBits = ref(0)
 const challengeBitsLoading = ref(false)
+const showModal = ref(false)
+const content = ref('')
+const modalSubtitle = ref('')
+
+const coprimeModalSubtitle = 'Random coprime of blum integer n, r is:';
+const commitmentModalSubtitle = 'Commitment x is:';
+const yModalSubtitle = 'Response y is:';
+
+const forgedYModalSubtitle = 'Forged Y is:';
 
 // Evil Prover
 const evilBits = ref('')
 const forgedY = ref(null)
 const forgedX = ref(null)
-const forgedXDisplay = ref('—')
+const forgedXDisplay = ref('')
 const sendForgedXStatus = ref('')
 
 
@@ -240,13 +277,21 @@ socket.on('challenge_bits_received', (data) => {
 //Good prover
 
 function generateR() {
+  if(coprimeR.value) {
+    return;
+  }
+
   if(blumN.value) {
-      coprimeR.value = generateRandomCoprime(blumN.value);
-      console.log('Generated r:', coprimeR.value.toString());
-    }
+    coprimeR.value = generateRandomCoprime(blumN.value);
+    console.log('Generated r:', coprimeR.value.toString()); 
+  }
 }
 
 function computeX() {
+  if(commitmentX.value) {
+    return;
+  }
+
   if (coprimeR.value && blumN.value) {
     commitmentX.value = coprimeR.value.square().mod(blumN.value);
     console.log('Computed x:', commitmentX.value.toString());
@@ -256,9 +301,11 @@ function computeX() {
 
 function computeY() {
   try {
+
     if( !coprimeR.value || !blumN.value || !secrets.value || challengeBits.value.length === 0) {
       return
     }
+    
     const parsedSecrets = parseSecrets(secrets.value)
 
     for (let i = 0; i < parsedSecrets.length; i++) {
@@ -308,6 +355,10 @@ function sendY() {
 //Evil prover
 
 function generateForgedY() { //coprime to blum int n
+  if(forgedY.value) {
+    return;
+  }
+
   if(blumN.value) {
     forgedY.value = generateRandomCoprime(blumN.value);
     console.log('Generated forged Y:', forgedY.value.toString());
@@ -347,9 +398,15 @@ function sendForgedY() {
     ySendStatusText.value = 'Please compute y before sending';
     return;
   }
-  
+
   socket.emit('publish_response_y', { response_y: forgedY.value });
   ySendStatusText.value = '✓ Response y has Been Published';
+}
+
+function onShowModal(_content, _subtitle) {
+  showModal.value = true;
+  modalSubtitle.value = _subtitle;
+  content.value = _content.toString();
 }
 
 onMounted(async () => {
