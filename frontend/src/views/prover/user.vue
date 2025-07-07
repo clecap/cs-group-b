@@ -269,7 +269,7 @@ const isInvalid = computed(() =>
 
 socket.on('challenge_bits_received', (data) => {
   if(data.challenge) {
-    challengeBits.value = data.challenge.split('').map(Number);
+    challengeBits.value = data.challenge;
     challengeBitsLoading.value = false;
   }
 })

@@ -37,6 +37,7 @@ const challengeBits = computed(() => {
 
 const verificationResult = ref(null);
 const challengeMode = ref('auto');
+const challengeError = ref('');
 const manualChallenge = ref('');
 
 
@@ -202,17 +203,23 @@ const handleGetUserInfo = async () => {
 }
 
 
-
-
-
-
 const sendChallenge = () => {
 
+  challengeError.value = '';
+  
   if (challengeMode.value === 'manual' && manualChallenge.value) {
-    challenge_bit_str.value = manualChallenge.value; // Store the manual challenge
+    challenge_bit_str.value = manualChallenge.value.split(',').map(Number); // Store the manual challenge
   } else if (challengeMode.value === 'auto') {
     challenge_bit_str.value = generateRandomChallenge();
   }
+
+  const challengeSize = challenge_bit_str.value.length;
+
+  if (challengeSize != numberofKeys.value) {
+    challengeError.value = `Number of challenge bits you entered is ${challengeSize}. \n It should be exactly ${numberofKeys.value}`
+    return;
+  }
+
   socket.emit('send_challenge', { challenge: challenge_bit_str.value });
   challenge_sent.value = true;
 };
@@ -221,13 +228,11 @@ const sendChallenge = () => {
 const generateRandomChallenge = () => {
   // random sequence of 0s and 1s of the length of the number of public keys
   const length = numberofKeys.value;
-  let challenge = '';
+  let challenge = [];
   for (let i = 0; i < length; i++) {
-    challenge += Math.random() < 0.5 ? '0' : '1';
+    challenge.push(Math.random() < 0.5 ? 0 : 1);
   }
   return challenge;
-
-
 };
 
 
@@ -362,6 +367,9 @@ const verification = (y, x, t, c, n) => {
             <button class="p-2 border border-gray-300 rounded-full hover:bg-gray-50 transition" @click="sendChallenge">
               →
             </button>
+            <p v-if="challengeError" class="w-full text-center text-red-600 font-semibold">
+              {{ challengeError }}
+            </p>
           </div>
 
           <div v-else class="flex justify-center">
