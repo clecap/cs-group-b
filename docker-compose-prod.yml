@@ -8,6 +8,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile-prod
+    environment:
+      BACKEND_BASE_URL: https://feigefiatshamirdemo.ddns.net:8000
     ports:
       - "443:5000"
     depends_on:
