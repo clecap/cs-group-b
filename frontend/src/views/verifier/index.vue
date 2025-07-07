@@ -23,11 +23,11 @@ const receivedCommitmentXMessage = ref('Commitment, x: xxxx');
 
 
 const yValue = ref('Waiting for y...');
-const xValue = ref(''); 
-const pubKeys= ref([]); 
+const xValue = ref('');
+const pubKeys = ref([]);
 const joinedPubKeys = computed(() => pubKeys.value.join(', '));
 
-const BlumInteger = ref(''); 
+const BlumInteger = ref('');
 const numberofKeys = ref(0); // Placeholder for number of public keys
 const challenge_bit_str = ref('');
 const challengeBits = computed(() => {
@@ -42,7 +42,7 @@ const manualChallenge = ref('');
 
 // Boolean flags to track the state of the verification process
 
-const user_info_received =ref(false);
+const user_info_received = ref(false);
 
 const public_keys_received = ref(false);
 
@@ -75,7 +75,7 @@ const proverName = query.proverName || 'Fallback_Prover'; // Get the username fr
 
 const button_y_received = () => {
   // Simulate receiving y value
- 
+
   y_received.value = true;
   yValue.value = demo_values.y;
 
@@ -107,9 +107,9 @@ const button_x_Received = () => {
 };
 
 
-const button_view_verifcation =() => {
- console.log('showing verifcation results');
- // this is jsut a stub for now...
+const button_view_verifcation = () => {
+  console.log('showing verifcation results');
+  // this is jsut a stub for now...
 };
 const button_acknowledge_public_keys = () => {
   // this is just a stub for now...
@@ -119,7 +119,7 @@ const button_acknowledge_public_keys = () => {
 onMounted(() => {
 
 
-  
+
   handleGetUserInfo(); // Call the function to get user info on mount
 
   socket.on('public_keys_received', (data) => {
@@ -143,7 +143,7 @@ onMounted(() => {
 
   socket.on('publish_commitment_x', (data) => {
     receivedCommitmentXMessage.value = 'Received commitment x: ' + data.commitment_x;
-    xValue.value = data.commitment_x; 
+    xValue.value = data.commitment_x;
     commitment_received.value = true;
   });
 
@@ -161,7 +161,7 @@ const handleGetUserInfo = async () => {
         username: proverName
       }
     })
-    console.log('API Response:', response.data); 
+    console.log('API Response:', response.data);
 
     if (response.data.username != proverName) {
       console.error("API error: received username not matching the send username")
@@ -171,7 +171,7 @@ const handleGetUserInfo = async () => {
 
 
     pubKeys.value = response.data.pubKeys.split(','); // Split the comma-separated string into an array
-  
+
 
     numberofKeys.value = pubKeys.value.length; // Update the number of public keys
     console.log('Number of public keys:', numberofKeys.value); // Debug log
@@ -187,7 +187,7 @@ const handleGetUserInfo = async () => {
 
     ///tmp workaround....when i update the flow i will remove the variable
     public_keys_received.value = true; //
-    
+
   }
   catch (error) {
     console.error('Failed to get the user info', error)
@@ -211,7 +211,7 @@ const sendChallenge = () => {
   if (challengeMode.value === 'manual' && manualChallenge.value) {
     challenge_bit_str.value = manualChallenge.value; // Store the manual challenge
   } else if (challengeMode.value === 'auto') {
-    challenge_bit_str.value= generateRandomChallenge(); 
+    challenge_bit_str.value = generateRandomChallenge();
   }
   socket.emit('send_challenge', { challenge: challenge_bit_str.value });
   challenge_sent.value = true;
@@ -219,17 +219,11 @@ const sendChallenge = () => {
 
 // Example: Generate a random challenge
 const generateRandomChallenge = () => {
- // random sequence of 0s and 1s of the length of the number of public keys
-  const length = numberofKeys.value; 
+  // random sequence of 0s and 1s of the length of the number of public keys
+  const length = numberofKeys.value;
   let challenge = '';
   for (let i = 0; i < length; i++) {
     challenge += Math.random() < 0.5 ? '0' : '1';
-  }
-  if (demo_values.username === 'demo_peggy' ){
-    // if demo user use the demo challenge
-    challenge = demo_values.challenge_bits;
-    // convert to string  ( this depends on hwo the demovalues are set up)
-    challenge = challenge.toString();
   }
   return challenge;
 
@@ -237,7 +231,7 @@ const generateRandomChallenge = () => {
 };
 
 
-const verification = (y,x,t,c,n) => {
+const verification = (y, x, t, c, n) => {
   // y: received y value
   // x: commitment x value
   // t: array of public keys (t₁, t₂, t₃, ...)
@@ -245,12 +239,12 @@ const verification = (y,x,t,c,n) => {
   // n: Blum integer
 
 
-/// checking that the values are the correct type...
+  /// checking that the values are the correct type...
   y = Number(y);
   x = Number(x);
   n = Number(n);
   t = t.map(Number); // Convert each public key to a number
-  c = c.map(String); // Ensure challenge bits are strings 
+  c = c.map(String); // Ensure challenge bits are strings
 
 
 
@@ -270,8 +264,8 @@ const verification = (y,x,t,c,n) => {
   console.log('Type of n:', typeof n);
 
   const ySquaredModN = (y * y) % n;
-  
-  
+
+
   let productModN = x;
 
   for (let i = 0; i < t.length; i++) {
@@ -281,7 +275,7 @@ const verification = (y,x,t,c,n) => {
   }
 
   const success = (ySquaredModN === productModN);
-  
+
   verificationResult.value = {
     success,
     ySquaredModN,
@@ -301,7 +295,7 @@ const verification = (y,x,t,c,n) => {
     <template #default>
       <div class="max-w-md mx-auto mt-8 space-y-6">
         <!-- Public Keys Section -->
-        
+
         <div class="space-y-4">
           <span class="text-lg font-semibold">
             Verifying for <span class="text-green-600 font-bold">{{ proverName }}</span>
@@ -311,8 +305,8 @@ const verification = (y,x,t,c,n) => {
           <div v-if="user_info_received" class="font-mono text-sm">
             Using {{ numberofKeys }} public keys: {{ joinedPubKeys }}
           </div>
-     
-<!-- 
+
+          <!--
 
           <div v-if="public_keys_received" class="text-gray-700"> received n public keys</div>
           <div v-else class="text-gray-700">Waiting for public keys.......</div>
@@ -336,7 +330,7 @@ const verification = (y,x,t,c,n) => {
         <!-- Challenge Generation Section -->
         <div v-if="commitment_received" class="space-y-4">
           <h3 class="font-semibold">Generate challenge</h3>
-          
+
           <!-- <div class="space-y-3">
             <label class="flex items-center space-x-2">
               <input
@@ -351,49 +345,33 @@ const verification = (y,x,t,c,n) => {
 
           <div class="space-y-3">
             <label class="flex items-center space-x-2">
-              <input
-                type="radio"
-                v-model="challengeMode"
-                value="auto"
-                class="h-4 w-4 text-gray-900 focus:ring-gray-500"
-              />
+              <input type="radio" v-model="challengeMode" value="auto"
+                class="h-4 w-4 text-gray-900 focus:ring-gray-500" />
               <span>Auto-generate challenge</span>
             </label>
             <label class="flex items-center space-x-2">
-              <input
-                type="radio"
-                v-model="challengeMode"
-                value="manual"
-                class="h-4 w-4 text-gray-900 focus:ring-gray-500"
-              />
+              <input type="radio" v-model="challengeMode" value="manual"
+                class="h-4 w-4 text-gray-900 focus:ring-gray-500" />
               <span>Enter challenge manually</span>
             </label>
           </div>
 
           <div v-if="challengeMode === 'manual'" class="flex items-center space-x-2">
-            <input
-              v-model="manualChallenge"
-              type="text"
-              class="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button
-              class="p-2 border border-gray-300 rounded-full hover:bg-gray-50 transition"
-              @click="sendChallenge"
-            >
+            <input v-model="manualChallenge" type="text"
+              class="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <button class="p-2 border border-gray-300 rounded-full hover:bg-gray-50 transition" @click="sendChallenge">
               →
             </button>
           </div>
 
           <div v-else class="flex justify-center">
-            <button
-              @click="sendChallenge"
-              class="px-8 py-3 bg-gray-900 text-white rounded-full hover:bg-gray-800 transition font-medium"
-            >
-              Generate and Send Challenge 
+            <button @click="sendChallenge"
+              class="px-8 py-3 bg-gray-900 text-white rounded-full hover:bg-gray-800 transition font-medium">
+              Generate and Send Challenge
             </button>
           </div>
 
-            <!-- <label class="flex items-center space-x-2">
+          <!-- <label class="flex items-center space-x-2">
               <input
                 type="radio"
                 name="challengeMode"
@@ -447,14 +425,12 @@ const verification = (y,x,t,c,n) => {
 
         <div v-if="verificationResult" class="space-y-4 p-4 bg-gray-50 rounded-lg">
           <h3 class="font-semibold">Verification</h3>
-          <div  class="font-mono text-sm space-y-1">
+          <div class="font-mono text-sm space-y-1">
             <div>y² mod n = {{ verificationResult.ySquaredModN }}</div>
             <div>x × t₁^c₁ × ... mod n = {{ verificationResult.productModN }}</div>
           </div>
-          <div
-            class="flex items-center space-x-2"
-            :class="verificationResult.success ? 'text-green-600' : 'text-red-600'"
-          >
+          <div class="flex items-center space-x-2"
+            :class="verificationResult.success ? 'text-green-600' : 'text-red-600'">
             <span class="text-xl">{{ verificationResult.success ? '✓' : '✗' }}</span>
             <span class="font-semibold">
               {{ verificationResult.success ? 'Verification succeeded!' : 'Verification failed!' }}
@@ -464,10 +440,10 @@ const verification = (y,x,t,c,n) => {
 
 
 
-      <!-- Info text decibing what is happening.... -->
-      <div class="space-y-4 p-4 bg-gray-50 rounded-lg border border-black-200"> 
-        
-        <!-- <div>
+        <!-- Info text decibing what is happening.... -->
+        <div class="space-y-4 p-4 bg-gray-50 rounded-lg border border-black-200">
+
+          <!-- <div>
           <h3 class="font-semibold">Info</h3>
           <p class="text-gray-700">
             This is the verifier view. It waits for the public keys, commitment, and y value from the prover.
@@ -475,49 +451,50 @@ const verification = (y,x,t,c,n) => {
             Finally, it verifies the response based on the received values.
           </p>
         </div>     -->
-        <div v-if ="public_keys_received&&(!commitment_received)" class="text-gray-700">
-          <h3 class="font-semibold">Step 2/6 Waiting for commitment</h3>
-          <p>After receiving the public keys the next step is for the proover to send the Commitment</p>
-          <p class="text-gray-500">Commitment is a value that is used to prove that the prover has the knowledge of the secret without revealing it.</p>
-          <p class="text-gray-500">Following that we will send the challenge bits</p>
-        </div>
+          <div v-if="public_keys_received && (!commitment_received)" class="text-gray-700">
+            <h3 class="font-semibold">Step 2/6 Waiting for commitment</h3>
+            <p>After receiving the public keys the next step is for the proover to send the Commitment</p>
+            <p class="text-gray-500">Commitment is a value that is used to prove that the prover has the knowledge of
+              the secret without revealing it.</p>
+            <p class="text-gray-500">Following that we will send the challenge bits</p>
+          </div>
 
-        <div v-else-if="commitment_received && !challenge_sent" class="text-gray-700">
-          <h3 class="font-semibold">Step 3/6 Generate and send challenge</h3>
-          <p>After receiving the commitment, the next step is to generate and send the challenge.</p>
-          <p class="text-gray-500">The challenge is a random sequence of bits that is used to verify the response from the prover.</p>
+          <div v-else-if="commitment_received && !challenge_sent" class="text-gray-700">
+            <h3 class="font-semibold">Step 3/6 Generate and send challenge</h3>
+            <p>After receiving the commitment, the next step is to generate and send the challenge.</p>
+            <p class="text-gray-500">The challenge is a random sequence of bits that is used to verify the response from
+              the prover.</p>
+          </div>
+          <div v-else-if="challenge_sent && !y_received" class="text-gray-700">
+            <h3 class="font-semibold">Step 4/6 Waiting for y</h3>
+            <p>After receiving the commitment, the next step is for the prover to send the y value.</p>
+            <p class="text-gray-500">The y value is used to verify the response from the prover.</p>
+          </div>
+          <div v-else-if="y_received && !verificationResult" class="text-gray-700">
+            <h3 class="font-semibold">Step 5/6 Waiting for verification</h3>
+            <p>After receiving the y value, the next step is to verify the response from the prover.</p>
+            <p class="text-gray-500">The verification is done by
+              checking if the y² mod n equals the product of x and t₁^c₁ × ... mod n.</p>
+          </div>
+          <div v-else-if="verificationResult" class="text-gray-700">
+            <h3 class="font-semibold">Step 6/6 Verification Result</h3>
+            <p>The verification result is displayed above.</p>
+            <p class="text-gray-500">If the verification succeeded, it means the prover has the knowledge of the secret
+              without revealing it.</p>
+          </div>
+          <div v-else class="text-gray-700">
+            <h3 class="font-semibold">Step 1/6 Waiting for public keys</h3>
+            <p>Waiting for the public keys from the prover.</p>
+            <p class="text-gray-500">The public keys are used to verify the response from the prover.</p>
+          </div>
         </div>
-        <div v-else-if="challenge_sent && !y_received" class="text-gray-700">
-          <h3 class="font-semibold">Step 4/6 Waiting for y</h3>
-          <p>After receiving the commitment, the next step is for the prover to send the y value.</p>
-          <p class="text-gray-500">The y value is used to verify the response from the prover.</p>
-        </div>
-        <div v-else-if="y_received && !verificationResult" class="text-gray-700">
-          <h3 class="font-semibold">Step 5/6 Waiting for verification</h3>
-          <p>After receiving the y value, the next step is to verify the response from the prover.</p>
-          <p class="text-gray-500">The verification is done by
-          checking if the y² mod n equals the product of x and t₁^c₁ × ... mod n.</p>   
-        </div>
-        <div v-else-if="verificationResult" class="text-gray-700">
-          <h3 class="font-semibold">Step 6/6 Verification Result</h3>
-          <p>The verification result is displayed above.</p>
-          <p class="text-gray-500">If the verification succeeded, it means the prover has the knowledge of the secret without revealing it.</p>
-        </div>
-       <div v-else class="text-gray-700">
-          <h3 class="font-semibold">Step 1/6 Waiting for public keys</h3>
-          <p>Waiting for the public keys from the prover.</p>
-          <p class="text-gray-500">The public keys are used to verify the response from the prover.</p>
-        </div>
-      </div>  
 
 
 
         <!-- Close Button -->
         <div class="flex justify-center mt-8">
-          <button
-            @click="goHome"
-            class="px-8 py-3 bg-gray-900 text-white rounded-full hover:bg-gray-800 transition font-medium"
-          >
+          <button @click="goHome"
+            class="px-8 py-3 bg-gray-900 text-white rounded-full hover:bg-gray-800 transition font-medium">
             Close
           </button>
 
@@ -527,33 +504,25 @@ const verification = (y,x,t,c,n) => {
           <h1 class="text-3xl font-bold text-center">DEBUG</h1>
         </div>
         <div class="flex justify-center mt-8 space-x-2">
-          <button
-            @click="button_acknowledge_public_keys"
-            class="px-3 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-800 transition font-medium"
-          >
+          <button @click="button_acknowledge_public_keys"
+            class="px-3 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-800 transition font-medium">
             Acknowledge public keys
           </button>
-          <button
-            @click="button_x_Received"
-            class="px-3 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-800 transition font-medium"
-          >
+          <button @click="button_x_Received"
+            class="px-3 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-800 transition font-medium">
             Receive commitment
           </button>
-          <button
-            @click="button_y_received"
-            class="px-3 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-800 transition font-medium"
-          >
+          <button @click="button_y_received"
+            class="px-3 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-800 transition font-medium">
             Receive y
           </button>
-          <button
-            @click="button_view_verifcation"
-            class="px-3 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-800 transition font-medium"
-          >
+          <button @click="button_view_verifcation"
+            class="px-3 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-800 transition font-medium">
             Verification Result
           </button>
         </div>
       </div>
-      
+
     </template>
   </BaseLayout>
 </template>
