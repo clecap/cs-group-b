@@ -1,38 +1,85 @@
 <script setup>
+// ========================
+// IMPORTS
+// ========================
+
+// Layout and Vue core functionality
 import BaseLayout from '../../layouts/BaseLayout.vue';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+
+// API and utility functions
 import api from '@/helpers/api';
+import { generateRandomCoprime } from '@/helpers/utility';
+import bigInt from "big-integer";
+
+
+// ========================
+// ROUTER INITIALIZATION
+// ========================
 
 const router = useRouter();
+
+
+// ========================
+// REACTIVE STATE VARIABLES
+// ========================
+
+// User input fields
 const username = ref('');
 const numberOfSecrets = ref('');
 const secretsText = ref('xxxxxxx\nxxxxxxx\nxxxxxxx\nxxxxxxx\nxxxxxxx\nxxxxxxx\nxxxxxxx\nxxxxxxx');
+
+// Blum integer related state
 const blumInteger = ref('');
 const loadingBlum = ref(false);
-const errorMessage = ref('');
-const publicKeys = ref([]);
+const blumSuccess = ref(false);
+const showBlumInfo = ref(false);
 
+// Public keys and secrets state
+const publicKeys = ref([]);
+const secretsGenerated = ref(false);
+const showPublicKeysInfo = ref(false);
+
+// UI feedback states
+const errorMessage = ref('');
+const copySuccess = ref(false);
+
+
+// ========================
+// BLUM INTEGER FUNCTIONS
+// ========================
+
+/**
+ * Fetches a Blum integer from the backend API
+ * Falls back to a hardcoded value (9797) if the API fails or returns invalid data
+ * Updates UI states to show loading, success, or error messages
+ */
 const handleGetBlumInteger = async () => {
+  // Reset states before starting
   loadingBlum.value = true;
   errorMessage.value = '';
+  blumSuccess.value = false;
   
   try {
-    // Assuming the API endpoint is GET /blum
+    // Make API call to get Blum integer
     const response = await api.get('/blum');
     
-    console.log('API Response:', response.data); // Debug log
+    console.log('API Response:', response.data);
     
-    // Handle the response structure { "blum": value }
+    // Try different possible response formats from the API
     const blumValue = response.data.blum || response.data.n || response.data.blum_integer;
     
+    // Validate the received value
     if (!blumValue || blumValue === null || blumValue === 'Infinity' || blumValue === 'NaN' || isNaN(parseInt(blumValue))) {
-      // Use a hardcoded Blum integer for development
+      // Use a hardcoded Blum integer for development/demo purposes
       blumInteger.value = '9797';
       errorMessage.value = 'Using demo Blum integer (API returned invalid value)';
     } else {
+      // Successfully received valid Blum integer
       blumInteger.value = blumValue.toString();
       errorMessage.value = '';
+      blumSuccess.value = true;
     }
     
     console.log('Blum Integer set to:', blumInteger.value);
@@ -47,47 +94,41 @@ const handleGetBlumInteger = async () => {
   }
 };
 
-// Generate a simple Blum integer for demo purposes
+/**
+ * Generates a simple Blum integer locally for testing purposes
+ * A Blum integer is the product of two prime numbers that are congruent to 3 (mod 4)
+ * This function is kept for local testing when API is unavailable
+ */
 const generateBlumInteger = () => {
+  // Small primes for demo purposes
   const primes = [7, 11, 19, 23, 31, 43, 47, 59, 67, 71, 79, 83, 103, 107];
+  
+  // Select first prime randomly
   const p = primes[Math.floor(Math.random() * primes.length)];
+  
+  // Select second prime (different from first)
   let q;
   do {
     q = primes[Math.floor(Math.random() * primes.length)];
   } while (q === p);
   
+  // Return the product
   return p * q;
 };
 
-// Helper function to calculate GCD (Greatest Common Divisor)
-const gcd = (a, b) => {
-  while (b !== 0) {
-    const temp = b;
-    b = a % b;
-    a = temp;
-  }
-  return a;
-};
 
-// Helper function to check if two numbers are coprime
-const areCoprime = (a, b) => {
-  return gcd(a, b) === 1;
-};
+// ========================
+// SECRETS GENERATION FUNCTIONS
+// ========================
 
-// Generate a random number that is coprime to n
-const generateCoprimeNumber = (n) => {
-  let candidate;
-  do {
-    // Generate random number between 2 and n-1
-    candidate = Math.floor(Math.random() * (n - 2)) + 2;
-  } while (!areCoprime(candidate, n));
-  return candidate;
-};
-
+/**
+ * Handles the generation of coprime secrets when user clicks the arrow button
+ * Validates input, generates unique coprime numbers, and computes public keys
+ */
 const handleSecretsSubmit = () => {
   console.log('Number of secrets:', numberOfSecrets.value);
   
-  // Validate input
+  // Validate the number of secrets input
   const numSecrets = parseInt(numberOfSecrets.value);
   if (isNaN(numSecrets) || numSecrets < 1) {
     errorMessage.value = 'Please enter a valid number of secrets (≥ 1)';
@@ -100,68 +141,97 @@ const handleSecretsSubmit = () => {
     return;
   }
   
-  const n = parseInt(blumInteger.value);
-  if (isNaN(n)) {
+  // Convert Blum integer to bigInt for large number calculations
+  const n = bigInt(blumInteger.value);
+  if (isNaN(parseInt(blumInteger.value))) {
     errorMessage.value = 'Invalid Blum Integer';
     return;
   }
   
-  // Generate coprime secrets
+  // Generate unique coprime secrets
   const secrets = [];
-  const usedValues = new Set();
+  const usedValues = new Set(); // Track used values to ensure uniqueness
   
   for (let i = 0; i < numSecrets; i++) {
     let secret;
+    // Keep generating until we find a unique coprime number
     do {
-      secret = generateCoprimeNumber(n);
-    } while (usedValues.has(secret)); // Ensure uniqueness
+      secret = generateRandomCoprime(n);
+    } while (usedValues.has(secret.toString()));
     
-    usedValues.add(secret);
+    usedValues.add(secret.toString());
     secrets.push(secret);
   }
   
   // Update the textarea with generated secrets
-  secretsText.value = secrets.join('\n');
+  secretsText.value = secrets.map(s => s.toString()).join('\n');
   errorMessage.value = '';
+  secretsGenerated.value = true;
   
-  // Calculate public keys
+  // Calculate public keys using the formula: t_i = s_i^2 mod n
   publicKeys.value = secrets.map((secret, index) => {
-    const t = (secret * secret) % n;
+    const t = secret.pow(2).mod(n);
     return {
       index: index + 1,
-      secret: secret,
-      publicKey: t
+      secret: secret.toString(),
+      publicKey: t.toString()
     };
   });
 };
 
+
+// ========================
+// UTILITY FUNCTIONS
+// ========================
+
+/**
+ * Copies the generated secrets to the user's clipboard
+ * Shows a success message that auto-hides after 3 seconds
+ */
 const copySecrets = () => {
   navigator.clipboard.writeText(secretsText.value).then(() => {
     console.log('Secrets copied to clipboard');
+    copySuccess.value = true;
+    
+    // Auto-hide success message after 3 seconds
+    setTimeout(() => {
+      copySuccess.value = false;
+    }, 3000);
   }).catch(err => {
     console.error('Failed to copy:', err);
   });
 };
 
+
+// ========================
+// REGISTRATION FUNCTION
+// ========================
+
+/**
+ * Handles the user registration process
+ * Validates all required data, sends to backend, and navigates to prover page on success
+ */
 const handleRegister = async () => {
-  // Validate all required data
+  // Validate username
   if (!username.value) {
     errorMessage.value = 'Please enter a username';
     return;
   }
   
+  // Validate Blum integer
   if (!blumInteger.value) {
     errorMessage.value = 'Please get a Blum Integer first';
     return;
   }
   
+  // Validate public keys
   if (publicKeys.value.length === 0) {
     errorMessage.value = 'Please generate secrets first';
     return;
   }
   
   try {
-    // Prepare the payload according to the API spec
+    // Prepare the payload according to the API specification
     const payload = {
       username: username.value,
       pubKeys: publicKeys.value.map(pk => pk.publicKey).join(','), // comma-separated string
@@ -170,14 +240,15 @@ const handleRegister = async () => {
     
     console.log('Registering with payload:', payload);
     
-    // Call the correct endpoint
+    // Make API call to register the user
     const response = await api.post('/user/register', payload);
     
     console.log('Registration response:', response.data);
     
-    // On success, navigate to the prover page
+    // On successful registration, navigate to the prover page
     router.push(`/prover/${username.value}`);
   } catch (error) {
+    // Handle various error scenarios
     console.error('Registration failed:', error);
     console.error('Error response:', error.response);
     
@@ -185,17 +256,20 @@ const handleRegister = async () => {
       console.error('Error data:', error.response.data);
       console.error('Error status:', error.response.status);
       
-      // Handle specific error codes
+      // Handle specific HTTP status codes
       if (error.response.status === 406) {
         errorMessage.value = 'User already exists. Please choose a different username.';
       } else {
+        // Generic error message with details if available
         errorMessage.value = error.response.data?.message || 
                             error.response.data || 
                             `Registration failed (${error.response.status})`;
       }
     } else if (error.request) {
+      // Request was made but no response received
       errorMessage.value = 'No response from server. Please check your connection.';
     } else {
+      // Something else went wrong
       errorMessage.value = 'Registration failed. Please try again.';
     }
   }
@@ -204,13 +278,29 @@ const handleRegister = async () => {
 
 <template>
   <BaseLayout>
+
+
+    <!-- ======================== -->
+    <!-- HEADER SECTION -->
+    <!-- ======================== -->
+
     <template #header>
       <h1 class="text-3xl font-bold text-center">Register as Prover</h1>
     </template>
 
+
+    <!-- ======================== -->
+    <!-- MAIN CONTENT -->
+    <!-- ======================== -->
+
     <template #default>
       <div class="max-w-2xl mx-auto mt-8 space-y-6">
-        <!-- Username Section -->
+        
+
+        <!-- ======================== -->
+        <!-- USERNAME INPUT SECTION -->
+        <!-- ======================== -->
+
         <div class="flex items-center space-x-4">
           <label class="font-medium">Set username:</label>
           <input
@@ -220,25 +310,39 @@ const handleRegister = async () => {
           />
         </div>
 
-        <!-- Blum Integer Section -->
+
+        <!-- ======================== -->
+        <!-- BLUM INTEGER SECTION -->
+        <!-- ======================== -->
+
         <div class="flex items-center space-x-4">
-          <span class="font-medium">Blum integer, n:</span>
-          <span v-if="blumInteger" class="font-mono">{{ blumInteger }}</span>
           <button
             @click="handleGetBlumInteger"
-            class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition"
+            class="border-1 border-black rounded-full px-6 py-2"
             :disabled="loadingBlum"
           >
             {{ loadingBlum ? 'Loading...' : 'Get Blum Integer' }}
           </button>
         </div>
         
-        <!-- Error message -->
-        <div v-if="errorMessage" class="text-red-500 text-sm">
+        <!-- Success message for Blum Integer with info button -->
+        <p v-if="blumSuccess" class="w-full text-center text-green-600 font-semibold">
+          ✓ Blum integer generated!
+          <button @click="showBlumInfo = true" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
+            <i>i</i>
+          </button>
+        </p>
+        
+        <!-- Error message display -->
+        <p v-if="errorMessage" class="text-red-500 text-xs mt-1">
           {{ errorMessage }}
-        </div>
+        </p>
 
-        <!-- Choose Secrets Section -->
+
+        <!-- ======================== -->
+        <!-- SECRETS GENERATION SECTION -->
+        <!-- ======================== -->
+
         <div>
           <p class="font-medium mb-4">
             Choose secrets s₁...sₖ coprime to the Blum integer n
@@ -255,7 +359,7 @@ const handleRegister = async () => {
             />
             <button
               @click="handleSecretsSubmit"
-              class="p-2 border border-gray-300 rounded-full hover:bg-gray-50 transition"
+              class="p-2 border-1 border-black rounded-full hover:bg-gray-50 transition"
               :disabled="!blumInteger"
               :title="!blumInteger ? 'Get Blum Integer first' : 'Generate secrets'"
             >
@@ -264,49 +368,113 @@ const handleRegister = async () => {
           </div>
         </div>
 
-        <!-- Secrets Display Section -->
+
+        <!-- ======================== -->
+        <!-- SECRETS DISPLAY SECTION -->
+        <!-- ======================== -->
+
         <div class="space-y-2">
           <div class="font-medium">Secrets sᵢ (coprime to n):</div>
           <div class="flex items-start space-x-3">
+            <!-- Textarea showing generated secrets (read-only) -->
             <textarea
               v-model="secretsText"
               readonly
               class="flex-1 px-4 py-3 border border-gray-300 rounded bg-gray-50 font-mono text-sm resize-none overflow-y-auto"
               rows="5"
             ></textarea>
+            <!-- Copy button -->
             <button
               @click="copySecrets"
-              class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition"
+              class="border-1 border-black rounded px-4 py-2"
             >
               Copy
             </button>
           </div>
+          <!-- Copy success feedback -->
+          <p v-if="copySuccess" class="text-green-600 text-sm text-center">
+            ✓ Secrets copied to clipboard!
+          </p>
         </div>
 
-        <!-- Computed Public Keys Section -->
+
+        <!-- ======================== -->
+        <!-- PUBLIC KEYS SECTION -->
+        <!-- ======================== -->
+
         <div class="space-y-2">
-          <div class="font-medium">Computed Public Keys (tᵢ = sᵢ² mod n):</div>
+          <!-- Default placeholder when no keys generated -->
           <div v-if="publicKeys.length === 0" class="font-mono text-sm space-y-1">
             <div>t₁ = s₁² mod n = xxxx</div>
             <div>t₂ = s₂² mod n = xxxx</div>
             <div>t₃ = s₃² mod n = xxxx</div>
           </div>
-          <div v-else class="font-mono text-sm space-y-1">
+          <!-- Show computed keys before final generation -->
+          <div v-else-if="!secretsGenerated" class="font-mono text-sm space-y-1">
             <div v-for="pk in publicKeys" :key="pk.index">
               t{{ pk.index }} = {{ pk.secret }}² mod {{ blumInteger }} = {{ pk.publicKey }}
             </div>
           </div>
+          
+          <!-- Success message for computed public keys with info button -->
+          <p v-if="secretsGenerated" class="w-full text-center text-green-600 font-semibold">
+            ✓ Public keys computed!
+            <button @click="showPublicKeysInfo = true" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
+              <i>i</i>
+            </button>
+          </p>
         </div>
 
-        <!-- Register Button -->
+
+        <!-- ======================== -->
+        <!-- REGISTER BUTTON -->
+        <!-- ======================== -->
+
         <div class="flex justify-center mt-8">
           <button
             @click="handleRegister"
-            class="px-8 py-3 bg-gray-900 text-white rounded-full hover:bg-gray-800 transition font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
+            class="px-8 py-3 bg-black text-white rounded-full hover:bg-gray-800 transition font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
             :disabled="!username || !blumInteger || publicKeys.length === 0"
           >
             Register
           </button>
+        </div>
+      </div>
+      
+      
+      <!-- ======================== -->
+      <!-- MODAL DIALOGS -->
+      <!-- ======================== -->
+      
+      <!-- Blum Integer Information Modal -->
+      <div v-if="showBlumInfo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-2xl mx-4">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">Information</h3>
+            <button @click="showBlumInfo = false" class="text-gray-500 hover:text-gray-700 text-xl">×</button>
+          </div>
+          <div class="space-y-2">
+            <p class="font-medium">Blum integer, n:</p>
+            <p class="font-mono text-sm break-all">{{ blumInteger }}</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Public Keys Information Modal -->
+      <div v-if="showPublicKeysInfo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">Information</h3>
+            <button @click="showPublicKeysInfo = false" class="text-gray-500 hover:text-gray-700 text-xl">×</button>
+          </div>
+          <div class="space-y-2">
+            <p class="font-medium">Computed Public Keys (tᵢ = sᵢ² mod n):</p>
+            <div class="font-mono text-sm space-y-1">
+              <div v-for="pk in publicKeys" :key="pk.index">
+                t{{ pk.index }} = {{ pk.secret }}² mod {{ blumInteger }} = {{ pk.publicKey }}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </template>
