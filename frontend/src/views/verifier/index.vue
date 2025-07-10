@@ -536,27 +536,6 @@ const verification = (y, x, t, c, n) => {
 
         </div>
 
-        <div class="flex justify-center mt-8">
-          <h1 class="text-3xl font-bold text-center">DEBUG</h1>
-        </div>
-        <div class="flex justify-center mt-8 space-x-2">
-          <button @click="button_acknowledge_public_keys"
-            class="px-3 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-800 transition font-medium">
-            Acknowledge public keys
-          </button>
-          <button @click="button_x_Received"
-            class="px-3 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-800 transition font-medium">
-            Receive commitment
-          </button>
-          <button @click="button_y_received"
-            class="px-3 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-800 transition font-medium">
-            Receive y
-          </button>
-          <button @click="button_view_verifcation"
-            class="px-3 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-800 transition font-medium">
-            Verification Result
-          </button>
-        </div>
       </div>
 
 
