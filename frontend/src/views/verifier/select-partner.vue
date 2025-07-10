@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router';
 import socket from '@/helpers/socket';
 import { ref, onMounted } from 'vue';
 import api from '@/helpers/api';
-
 import demo_values from '@/helpers/demo_values.json';
 
 const router = useRouter();
@@ -31,6 +30,11 @@ const dummy_provers = ref([
 
 ]);
 
+
+
+//// those 2 are for the popup modal
+const displayed_keys = ref([]);
+const showPublicKeysInfo = ref(false);
 
 
 const loadingProoverTable = ref(false);
@@ -96,6 +100,23 @@ const selectprover = (prover) => {
 };
 
 
+const display_prover_keys = (prover) => {
+  // This function can be used to display the keys of the selected prover
+
+
+  prover = provers.value.find(p => p.name === prover);
+
+  console.log('Displaying keys for prover:', prover);
+
+  let keys = prover.keys.split(',').map(key => BigInt(key.trim()));
+  console.log('Parsed keys:', keys); 
+  displayed_keys.value = keys; // Assuming keys are stored in the 'keys' property of the prover object
+  console.log('Displayed keys:', displayed_keys.value);
+
+  // You can implement further logic here if needed
+  showPublicKeysInfo.value = true
+};
+
 const username = ref(demo_values.username || 'demo_peggy'); 
 const blumInteger = ref(demo_values.blum || 77);
 
@@ -151,8 +172,20 @@ const register_demo_peggy = async () => {
 
 
 
+const discribe_keys = (keys) => {
+  
+  try {
+    keys = keys.split(',').map(key => BigInt(key.trim())); // Split the keys string into an array
+  } catch (error) {
+    console.error('Error parsing keys:', error);
+    return 'Invalid keys format';
+  }
+  /// assumption!   the keys are all of the same bit length, but that should be the case anyway, right?
+  let bitlength = keys[0].toString(2).length; // Calculate the bit length of the first key
 
-
+  let result = keys.length+ " keys, with " + bitlength + " bits each";
+  return result;
+};
 
 
 onMounted(() => {
@@ -190,7 +223,12 @@ onMounted(() => {
           <tbody>
             <tr v-for="prover in provers" :key="prover.id" class="hover:bg-gray-50">
               <td class="px-4 py-2 border-b">{{ prover.name }}</td>
-              <td class="px-4 py-2 border-b">{{ prover.keys }}</td>
+              <td class="px-4 py-2 border-b">
+                {{ discribe_keys(prover.keys) }}
+                <button @click=display_prover_keys(prover.name) class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
+                  <i>i</i>
+                </button>
+              </td>
               <!-- replace with the ac  -->
               <td class="px-4 py-2 border-b">{{ prover.reg_time}}</td>
               <td class="px-4 py-2 border-b">
@@ -234,6 +272,30 @@ onMounted(() => {
             </button>
         </div>
       </div>
+
+
+
+
+      <!-- Public Keys Information Modal -->
+      <div v-if="showPublicKeysInfo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">Information</h3>
+            <button @click="showPublicKeysInfo = false" class="text-gray-500 hover:text-gray-700 text-xl">×</button>
+          </div>
+          <div class="space-y-2">
+            <p class="font-medium">The Provers Public Keys (tᵢ = sᵢ² mod n):</p>
+            <div class="font-mono text-sm space-y-1">
+              <div v-for="(pk, index) in displayed_keys">
+                t{{index}}: {{ pk }}  
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+
     </template>
   </BaseLayout>
 </template>
