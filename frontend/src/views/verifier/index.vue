@@ -28,12 +28,9 @@ const pubKeys = ref([]);
 const joinedPubKeys = computed(() => pubKeys.value.join(', '));
 
 const BlumInteger = ref('');
-const numberofKeys = ref(0); // Placeholder for number of public keys
+const numberofKeys = ref(0); 
 const challenge_bit_str = ref('');
-const challengeBits = computed(() => {
-  // Convert the challenge bit string to an array of strings
-  return challenge_bit_str.value.split('').map(bit => bit.toString());
-});
+const challengeBits = ref([]); 
 
 const verificationResult = ref(null);
 const challengeMode = ref('auto');
@@ -123,21 +120,21 @@ onMounted(() => {
 
   handleGetUserInfo(); // Call the function to get user info on mount
 
-  socket.on('public_keys_received', (data) => {
-    receivedKeysMessage.value = 'Received public keys: ' + data.public_keys.join(', ');
-    public_keys_received.value = true;
-  });
+
   socket.on('publish_response_y', (data) => {
-    yValue.value = `Receive y value: ${data.response_y}`;
+
+    console.log('Received response y:', data.response_y);
+    
+    yValue.value =data.response_y;
     y_received.value = true;
 
     // Trigger verification after receiving y
     verification(
-      y = yValue.value,
-      x = xValue.value,
-      t = pubKeys.value,
-      c = challengeBits.value,
-      n = BlumInteger.value
+      yValue.value,
+      xValue.value,
+      pubKeys.value,
+      challengeBits.value,
+      BlumInteger.value
     )
     console.log('Verification result:', verificationResult.value);
   });
@@ -208,19 +205,19 @@ const sendChallenge = () => {
   challengeError.value = '';
   
   if (challengeMode.value === 'manual' && manualChallenge.value) {
-    challenge_bit_str.value = manualChallenge.value.split(',').map(Number); // Store the manual challenge
+    challengeBits.value = manualChallenge.value.split(',').map(Number); // Store the manual challenge
   } else if (challengeMode.value === 'auto') {
-    challenge_bit_str.value = generateRandomChallenge();
+    challengeBits.value = generateRandomChallenge();
   }
 
-  const challengeSize = challenge_bit_str.value.length;
+  const challengeSize = challengeBits.value.length;
 
   if (challengeSize != numberofKeys.value) {
     challengeError.value = `Number of challenge bits you entered is ${challengeSize}. \n It should be exactly ${numberofKeys.value}`
     return;
   }
 
-  socket.emit('send_challenge', { challenge: challenge_bit_str.value });
+  socket.emit('send_challenge', { challenge: challengeBits.value });
   challenge_sent.value = true;
 };
 
@@ -244,11 +241,10 @@ const verification = (y, x, t, c, n) => {
   // n: Blum integer
 
 
-  /// checking that the values are the correct type...
-  y = Number(y);
-  x = Number(x);
-  n = Number(n);
-  t = t.map(Number); // Convert each public key to a number
+  y =BigInt(y);
+  x = BigInt(x);
+  n = BigInt(n); 
+  t = t.map(BigInt); // Convert each public key to a BigInt
   c = c.map(String); // Ensure challenge bits are strings
 
 
@@ -275,9 +271,10 @@ const verification = (y, x, t, c, n) => {
 
   for (let i = 0; i < t.length; i++) {
     if (c[i] === '1') {
-      productModN = (productModN * t[i]) % n;
+      productModN = productModN * t[i];
     }
   }
+  productModN = productModN % n;   // take mod n
 
   const success = (ySquaredModN === productModN);
 
