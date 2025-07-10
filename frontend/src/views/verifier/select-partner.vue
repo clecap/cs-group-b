@@ -188,6 +188,22 @@ const discribe_keys = (keys) => {
 };
 
 
+const showTimeRegistered = (reg_time) => {
+  
+  let parsed_date = new Date(reg_time).toLocaleString('de-DE', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    timeZone: 'Europe/Berlin' // Change to your desired timezone
+  });
+
+  return parsed_date;
+};
+
+
 onMounted(() => {
 
 
@@ -230,12 +246,12 @@ onMounted(() => {
                 </button>
               </td>
               <!-- replace with the ac  -->
-              <td class="px-4 py-2 border-b">{{ prover.reg_time}}</td>
-              <td class="px-4 py-2 border-b">
+              <td class="px-4 py-2 border-b">{{showTimeRegistered(prover.reg_time)}}</td>
+              <!-- <td class="px-4 py-2 border-b">
                 <span :class="prover.status === 'available' ? 'text-green-600' : 'text-red-600'">
                   {{ prover.status }}
                 </span>
-              </td>
+              </td> -->
               <td class="px-4 py-2 border-b">
                 <button
                   class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition"

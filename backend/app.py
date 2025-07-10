@@ -78,7 +78,7 @@ def register_user():
     if user is not None:
         return ("user already exists", 406)
 
-    data["regTime"] = datetime.datetime.now()
+    data["regTime"] = datetime.datetime.now(tz=datetime.timezone.utc)
 
     cur.execute("INSERT INTO user VALUES (:username,:pubKeys,:blum, :regTime)", data)
     db.commit()
