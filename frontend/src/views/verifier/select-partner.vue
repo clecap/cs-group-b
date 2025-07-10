@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router';
 import socket from '@/helpers/socket';
 import { ref, onMounted } from 'vue';
 import api from '@/helpers/api';
-
 import demo_values from '@/helpers/demo_values.json';
 
 const router = useRouter();
@@ -31,6 +30,11 @@ const dummy_provers = ref([
 
 ]);
 
+
+
+//// those 2 are for the popup modal
+const displayed_keys = ref([]);
+const showPublicKeysInfo = ref(false);
 
 
 const loadingProoverTable = ref(false);
@@ -96,63 +100,55 @@ const selectprover = (prover) => {
 };
 
 
-const username = ref(demo_values.username || 'demo_peggy'); 
-const blumInteger = ref(demo_values.blum || 77);
-
-const register_demo_peggy = async () => {
+const display_prover_keys = (prover) => {
+  // This function can be used to display the keys of the selected prover
 
 
-  try {
-    // Prepare the payload according to the API spec
-    const payload = {
-      username: username.value,
-      pubKeys:  demo_values.publicKeys || [9], // Use demo values or default
-      blum: blumInteger.value || 77 
-    };
+  prover = provers.value.find(p => p.name === prover);
 
+  console.log('Displaying keys for prover:', prover);
 
-    // Convert pubKeys to a comma-separated string
-    payload.pubKeys = payload.pubKeys.join(','); 
-    
-    
-    console.log('Registering with payload:', payload);
-    
-    // Call the correct endpoint
-    const response = await api.post('/user/register', payload);
-    
-    console.log('Registration response:', response.data);
-    
-    // // On success, navigate to the prover page
-    // router.push(`/prover/${username.value}`);
-  } catch (error) {
-    console.error('Registration failed:', error);
-    console.error('Error response:', error.response);
-    
-    if (error.response) {
-      console.error('Error data:', error.response.data);
-      console.error('Error status:', error.response.status);
-      
-      // Handle specific error codes
-      if (error.response.status === 406) {
-        errorMessage.value = 'User already exists. Please choose a different username.';
-      } else {
-        errorMessage.value = error.response.data?.message || 
-                            error.response.data || 
-                            `Registration failed (${error.response.status})`;
-      }
-    } else if (error.request) {
-      errorMessage.value = 'No response from server. Please check your connection.';
-    } else {
-      errorMessage.value = 'Registration failed. Please try again.';
-    }
-  }
+  let keys = prover.keys.split(',').map(key => BigInt(key.trim()));
+  console.log('Parsed keys:', keys); 
+  displayed_keys.value = keys; // Assuming keys are stored in the 'keys' property of the prover object
+  console.log('Displayed keys:', displayed_keys.value);
+
+  // You can implement further logic here if needed
+  showPublicKeysInfo.value = true
 };
 
 
 
+const discribe_keys = (keys) => {
+  
+  try {
+    keys = keys.split(',').map(key => BigInt(key.trim())); // Split the keys string into an array
+  } catch (error) {
+    console.error('Error parsing keys:', error);
+    return 'Invalid keys format';
+  }
+  /// assumption!   the keys are all of the same bit length, but that should be the case anyway, right?
+  let bitlength = keys[0].toString(2).length; // Calculate the bit length of the first key
+
+  let result = keys.length+ " keys, with " + bitlength + " bits each";
+  return result;
+};
 
 
+const showTimeRegistered = (reg_time) => {
+  
+  let parsed_date = new Date(reg_time).toLocaleString('de-DE', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    timeZone: 'Europe/Berlin' // Change to your desired timezone
+  });
 
+  return parsed_date;
+};
 
 
 onMounted(() => {
@@ -175,7 +171,7 @@ onMounted(() => {
       <div class="flex flex-col items-center mt-10 space-y-6">
         <!-- Prover button -->
 
-        <div class="h3"> select the right prover</div>
+        <div class="h3"> Please select the right prover from the table below</div>
 
         <table class="min-w-full border border-gray-300 rounded-lg">
           <thead>
@@ -190,14 +186,19 @@ onMounted(() => {
           <tbody>
             <tr v-for="prover in provers" :key="prover.id" class="hover:bg-gray-50">
               <td class="px-4 py-2 border-b">{{ prover.name }}</td>
-              <td class="px-4 py-2 border-b">{{ prover.keys }}</td>
-              <!-- replace with the ac  -->
-              <td class="px-4 py-2 border-b">{{ prover.reg_time}}</td>
               <td class="px-4 py-2 border-b">
+                {{ discribe_keys(prover.keys) }}
+                <button @click=display_prover_keys(prover.name) class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
+                  <i>i</i>
+                </button>
+              </td>
+              <!-- replace with the ac  -->
+              <td class="px-4 py-2 border-b">{{showTimeRegistered(prover.reg_time)}}</td>
+              <!-- <td class="px-4 py-2 border-b">
                 <span :class="prover.status === 'available' ? 'text-green-600' : 'text-red-600'">
                   {{ prover.status }}
                 </span>
-              </td>
+              </td> -->
               <td class="px-4 py-2 border-b">
                 <button
                   class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition"
@@ -216,8 +217,6 @@ onMounted(() => {
           >
             <span>Refresh Provers</span>
           </button>
-        </div>
-        <div class="flex justify-center mt-4">
           <button 
             @click="goHome" 
               class="border border-black rounded-xl p-3 flex items-center hover:bg-gray-100 transition cursor-pointer w-48 justify-center"    
@@ -225,15 +224,32 @@ onMounted(() => {
             <span>Go Home</span>
             </button>
         </div>
-        <div class="flex justify-center mt-4">
-          <button 
-            @click="register_demo_peggy" 
-              class="border border-black rounded-xl p-3 flex items-center hover:bg-gray-100 transition cursor-pointer w-48 justify-center"    
-          >
-            <span>DEBUG add fake user</span>
-            </button>
+
+      </div>
+
+
+
+
+      <!-- Public Keys Information Modal -->
+      <div v-if="showPublicKeysInfo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">Information</h3>
+            <button @click="showPublicKeysInfo = false" class="text-gray-500 hover:text-gray-700 text-xl">×</button>
+          </div>
+          <div class="space-y-2">
+            <p class="font-medium">The Provers Public Keys (tᵢ = sᵢ² mod n):</p>
+            <div class="font-mono text-sm space-y-1">
+              <div v-for="(pk, index) in displayed_keys">
+                t{{index}}: {{ pk }}  
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
+
+
     </template>
   </BaseLayout>
 </template>

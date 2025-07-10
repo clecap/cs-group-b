@@ -71,6 +71,18 @@ const proverName = query.proverName || 'Fallback_Prover'; // Get the username fr
 // }
 // };
 
+
+
+/// For the info popup modal
+
+const showPublicKeysInfo = ref(false);
+const showCommitmentInfo = ref(false);
+const showYInfo = ref(false);
+const showySquaredModNInfo = ref(false);
+const showProductModNInfo = ref(false);
+
+
+
 const button_y_received = () => {
   // Simulate receiving y value
 
@@ -305,7 +317,10 @@ const verification = (y, x, t, c, n) => {
         </div>
         <div class="space-y-2">
           <div v-if="user_info_received" class="font-mono text-sm">
-            Using {{ numberofKeys }} public keys: {{ joinedPubKeys }}
+            Using {{ numberofKeys }} public keys                 
+            <button @click= "showPublicKeysInfo= true" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
+              <i>i</i>
+            </button>
           </div>
 
           <!--
@@ -324,7 +339,10 @@ const verification = (y, x, t, c, n) => {
         <div v-if="public_keys_received" class="space-y-2">
 
           <div v-if="commitment_received" class="font-mono text-sm">
-            <p>{{ receivedCommitmentXMessage }}</p>
+            received commitment       
+              <button @click= "showCommitmentInfo= true" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
+              <i>i</i>
+            </button>
           </div>
           <div v-else class="text-gray-700">Waiting for commitment.......</div>
         </div>
@@ -408,7 +426,9 @@ const verification = (y, x, t, c, n) => {
         <!-- Waiting for Y -->
         <div v-if="challenge_sent" class="space-y-2">
           <div v-if="y_received" class="font-mono text-sm">
-            <p>{{ yValue }}</p>
+            <button @click= "showYInfo= true" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
+              <i>i</i>
+            </button>
           </div>
           <div v-else class="text-gray-700">Waiting for y......</div>
         </div>
@@ -431,8 +451,19 @@ const verification = (y, x, t, c, n) => {
         <div v-if="verificationResult" class="space-y-4 p-4 bg-gray-50 rounded-lg">
           <h3 class="font-semibold">Verification</h3>
           <div class="font-mono text-sm space-y-1">
-            <div>y² mod n = {{ verificationResult.ySquaredModN }}</div>
-            <div>x × t₁^c₁ × ... mod n = {{ verificationResult.productModN }}</div>
+            <div>y² mod n  =     
+              <button @click= "showySquaredModNInfo= true" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
+                <i>show number</i>
+              </button>
+            
+            </div>
+            <div>x × t₁^c₁ × ... mod n =            
+              <button @click= "showySquaredModNInfo= true" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
+                <i>show number</i>
+              </button>
+            </div>
+
+
           </div>
           <div class="flex items-center space-x-2"
             :class="verificationResult.success ? 'text-green-600' : 'text-red-600'">
@@ -505,28 +536,96 @@ const verification = (y, x, t, c, n) => {
 
         </div>
 
-        <div class="flex justify-center mt-8">
-          <h1 class="text-3xl font-bold text-center">DEBUG</h1>
-        </div>
-        <div class="flex justify-center mt-8 space-x-2">
-          <button @click="button_acknowledge_public_keys"
-            class="px-3 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-800 transition font-medium">
-            Acknowledge public keys
-          </button>
-          <button @click="button_x_Received"
-            class="px-3 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-800 transition font-medium">
-            Receive commitment
-          </button>
-          <button @click="button_y_received"
-            class="px-3 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-800 transition font-medium">
-            Receive y
-          </button>
-          <button @click="button_view_verifcation"
-            class="px-3 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-800 transition font-medium">
-            Verification Result
-          </button>
+      </div>
+
+
+
+      
+      <!-- Public Keys Information Modal -->
+      <div v-if="showPublicKeysInfo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">Information</h3>
+            <button @click="showPublicKeysInfo = false" class="text-gray-500 hover:text-gray-700 text-xl">×</button>
+          </div>
+          <div class="space-y-2">
+            <p class="font-medium">The Provers Public Keys (tᵢ = sᵢ² mod n):</p>
+            <div class="font-mono text-sm space-y-1">
+              <div v-for="(pk, index) in pubKeys ">
+                t{{index}}: {{ pk }}  
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
+      <!-- Commitment Modal -->
+      <div v-if="showCommitmentInfo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">Information</h3>
+            <button @click="showCommitmentInfo = false" class="text-gray-500 hover:text-gray-700 text-xl">×</button>
+          </div>
+          <div class="space-y-2">
+            <p class="font-medium">The Commitment from the prover:</p>
+            <div class="font-mono text-sm space-y-1">
+              x: {{ xValue }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Y  Modal -->
+      <div v-if="showYInfo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">Information</h3>
+            <button @click="showYInfo = false" class="text-gray-500 hover:text-gray-700 text-xl">×</button>
+          </div>
+          <div class="space-y-2">
+            <p class="font-medium"> y</p>
+            <div class="font-mono text-sm space-y-1">
+              y {{ yValue }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- y^2 mod n  Modal -->
+      <div v-if="showySquaredModNInfo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">Information</h3>
+            <button @click="showySquaredModNInfo = false" class="text-gray-500 hover:text-gray-700 text-xl">×</button>
+          </div>
+          <div class="space-y-2">
+            <p class="font-medium"> x × t₁^c₁ × ... mod n:  </p>
+            <div class="font-mono text-sm space-y-1">
+              {{ verificationResult.productModN }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- productModNInfo Modal -->
+      <div v-if="showProductModNInfo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">Information</h3>
+            <button @click="showProductModNInfo = false" class="text-gray-500 hover:text-gray-700 text-xl">×</button>
+          </div>
+          <div class="space-y-2">
+            <p class="font-medium">y² mod n : :</p>
+            <div class="font-mono text-sm space-y-1">
+              y² mod n : {{ verificationResult.ySquaredModN }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+
 
     </template>
   </BaseLayout>
