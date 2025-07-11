@@ -18,7 +18,8 @@ services:
     environment:
       BACKEND_BASE_URL: https://feigefiatshamirdemo.ddns.net:8000
     ports:
-      - "443:5000"
+      - "8001:5000"
+      # - "443:5000"
     depends_on:
       backend:
         condition: service_started
