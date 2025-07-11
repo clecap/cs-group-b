@@ -1,5 +1,5 @@
 import datetime
-from flask import Flask, send_from_directory, jsonify
+from flask import Flask, jsonify
 from flask_socketio import SocketIO, emit
 import os
 from utils import generate_blum, get_db
@@ -7,9 +7,9 @@ from flask import g
 from configparser import ConfigParser
 from flask import request
 from flask_cors import CORS
-import datetime
+import eventlet
 
-app = Flask(__name__, static_folder="../frontend", static_url_path="")
+app = Flask(__name__)
 CORS(app)
 app.secret_key = os.urandom(24)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -135,8 +135,6 @@ if __name__ == "__main__":
         app,
         debug=False,
         host="0.0.0.0",
-        ssl_context=(
-            "/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/fullchain.pem",
-            "/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/privkey.pem",
-        ),
+        certfile="/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/fullchain.pem",
+        keyfile="/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/privkey.pem",
     )
