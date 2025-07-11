@@ -22,4 +22,4 @@ COPY . .
 EXPOSE 5000
 
 # run the command
-CMD ["poetry","run","flask", "run","-h","0.0.0.0"]
+CMD ["poetry","run","python", "app.py"]
