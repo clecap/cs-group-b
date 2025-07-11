@@ -135,10 +135,8 @@ if __name__ == "__main__":
         app,
         debug=False,
         host="0.0.0.0",
-        options={
-            "ssl_context": (
-                "/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/fullchain.pem",
-                "/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/privkey.pem",
-            )
-        },
+        ssl_context=(
+            "/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/fullchain.pem",
+            "/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/privkey.pem",
+        ),
     )
