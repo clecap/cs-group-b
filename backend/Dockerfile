@@ -23,4 +23,5 @@ EXPOSE 5000
 
 # run the command
 # CMD ["poetry","run","flask", "run","-h","0.0.0.0",'--cert=/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/fullchain.pem','--key=/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/privkey.pem']
-CMD ["poetry","run","python", "app.py"]
+# CMD ["poetry","run","python", "app.py"]
+CMD ["poetry","run","flask", "run","-h","0.0.0.0"]

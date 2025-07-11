@@ -130,11 +130,10 @@ def get_all_users():
 
 
 if __name__ == "__main__":
-    print("here")
     socketio.run(
         app,
         debug=True,
-        # host="0.0.0.0",
+        host="0.0.0.0",
         # certfile="/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/fullchain.pem",
         # keyfile="/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/privkey.pem",
     )
