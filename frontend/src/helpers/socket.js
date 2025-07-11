@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client';
 
-const SOCKET_URL =  import.meta.env.PROD ? undefined : "http://localhost:8000";
+const SOCKET_URL =  import.meta.env.PROD ?  'https://feigefiatshamirdemo.ddns.net:8000': "http://localhost:8000";
 
 
 const socket = io(SOCKET_URL);
