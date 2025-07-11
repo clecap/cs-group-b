@@ -25,4 +25,5 @@ COPY --from=build /usr/src/app/dist .
 
 EXPOSE 5000
 
-CMD ["serve","--ssl-cert","/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/fullchain.pem","--ssl-key","/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/privkey.pem","-s", ".", "-l", "5000"]
+# CMD ["serve","--ssl-cert","/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/fullchain.pem","--ssl-key","/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/privkey.pem","-s", ".", "-l", "5000"]
+CMD ["serve","-s", ".", "-l", "5000"]
