@@ -130,9 +130,16 @@ def get_all_users():
 
 
 if __name__ == "__main__":
-    socketio.run(
-        app,
-        host="0.0.0.0",
-        keyfile="/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/privkey.pem",
-        certfile="/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/fullchain.pem",
-    )
+    if os.environ.get("IS_PRODUCTION"):
+        socketio.run(
+            app,
+            host="0.0.0.0",
+            debug=False,
+            keyfile="/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/privkey.pem",
+            certfile="/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/fullchain.pem",
+        )
+    else:
+        socketio.run(
+            app,
+            host="0.0.0.0",
+        )

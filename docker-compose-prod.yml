@@ -1,6 +1,8 @@
 services:
   backend:
     build: ./backend
+    environment:
+      IS_PRODUCTION: True
     ports:
       - "8000:5000"
     volumes:
