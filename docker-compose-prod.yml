@@ -3,6 +3,13 @@ services:
     build: ./backend
     ports:
       - "8000:5000"
+    volumes:
+      - type: bind
+        source: '/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/fullchain.pem'
+        target: '/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/fullchain.pem'
+      - type: bind
+        source: '/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/privkey.pem'
+        target: '/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/privkey.pem'
 
   frontend:
     build:
