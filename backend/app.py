@@ -7,7 +7,6 @@ from flask import g
 from configparser import ConfigParser
 from flask import request
 from flask_cors import CORS
-import eventlet
 
 app = Flask(__name__)
 CORS(app)
@@ -129,12 +128,13 @@ def get_all_users():
 
     return ({"provers": user_info_list}, 200)
 
+
 if __name__ == "__main__":
-    print('here')
+    print("here")
     socketio.run(
         app,
         debug=True,
-        host="0.0.0.0",
+        # host="0.0.0.0",
         # certfile="/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/fullchain.pem",
         # keyfile="/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/privkey.pem",
     )
