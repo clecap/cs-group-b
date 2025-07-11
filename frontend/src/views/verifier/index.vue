@@ -211,8 +211,17 @@ const handleGetUserInfo = async () => {
 
 }
 
+const onlyBinary = computed(() => /^[01,]*$/.test(manualChallenge.value))
+
+const isInvalid = computed(() =>
+  manualChallenge.value.length > 0 && !onlyBinary.value
+)
 
 const sendChallenge = () => {
+
+  if (isInvalid.value) {
+    return;
+  }
 
   challengeError.value = '';
   
@@ -378,7 +387,7 @@ const verification = (y, x, t, c, n) => {
 
           <div v-if="challengeMode === 'manual'" class="flex items-center space-x-2">
             <input v-model="manualChallenge" type="text"
-              class="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              class="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. 0,1,1"/>
             <button class="p-2 border border-gray-300 rounded-full hover:bg-gray-50 transition" @click="sendChallenge">
               →
             </button>
@@ -386,6 +395,9 @@ const verification = (y, x, t, c, n) => {
               {{ challengeError }}
             </p>
           </div>
+          <p v-if="isInvalid" class="text-red-500 text-xs mt-1">
+            Please use only 0 and 1
+          </p>
 
           <div v-else class="flex justify-center">
             <button @click="sendChallenge"
