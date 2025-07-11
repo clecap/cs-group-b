@@ -129,11 +129,11 @@ def get_all_users():
 
     return ({"provers": user_info_list}, 200)
 
-
 if __name__ == "__main__":
+    print('here')
     socketio.run(
         app,
-        debug=False,
+        debug=True,
         host="0.0.0.0",
         # certfile="/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/fullchain.pem",
         # keyfile="/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/privkey.pem",
