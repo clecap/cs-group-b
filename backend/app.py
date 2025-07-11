@@ -135,6 +135,6 @@ if __name__ == "__main__":
         app,
         debug=False,
         host="0.0.0.0",
-        certfile="/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/fullchain.pem",
-        keyfile="/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/privkey.pem",
+        # certfile="/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/fullchain.pem",
+        # keyfile="/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/privkey.pem",
     )
