@@ -14,23 +14,27 @@ CORS(app)
 app.secret_key = os.urandom(24)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-@socketio.on('publish_public_keys')
+
+@socketio.on("publish_public_keys")
 def publishPublicKeys(data):
     emit("public_keys_received", data, broadcast=True)
 
 
 @socketio.on("publish_commitment_x")
 def handleX(data):
-    emit('publish_commitment_x', data, broadcast=True)
+    emit("publish_commitment_x", data, broadcast=True)
 
-@socketio.on('publish_response_y')
+
+@socketio.on("publish_response_y")
 def handleY(data):
-    emit('publish_response_y', data, broadcast=True)
+    emit("publish_response_y", data, broadcast=True)
 
-@socketio.on('send_challenge')
+
+@socketio.on("send_challenge")
 def sendChallenge(data):
-    emit('challenge_bits_received', data, broadcast=True)
-    
+    emit("challenge_bits_received", data, broadcast=True)
+
+
 # close db connection after every request
 @app.teardown_appcontext
 def close_connection(exception):
@@ -127,4 +131,12 @@ def get_all_users():
 
 
 if __name__ == "__main__":
-    socketio.run(app, debug=True)
+    socketio.run(
+        app,
+        debug=False,
+        host="0.0.0.0",
+        ssl_context=(
+            "/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/fullchain.pem",
+            "/etc/letsencrypt/live/feigefiatshamirdemo.ddns.net/privkey.pem",
+        ),
+    )

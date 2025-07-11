@@ -14,7 +14,6 @@ dependencies = [
     "flask-socketio (>=5.5.1,<6.0.0)",
     "flask-cors (>=6.0.1,<7.0.0)",
     "eventlet (>=0.40.0,<0.41.0)",
-    "pyopenssl (>=25.1.0,<26.0.0)",
 ]
 
 [tool.poetry]
