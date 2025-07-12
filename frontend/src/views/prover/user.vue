@@ -16,7 +16,7 @@
 
       <!-- Toggle -->
       <div class="flex items-center">
-        <span :class="!useVerifiersBits ? 'text-black font-medium' : 'text-gray-600'">Use Verifier’s challenge bits</span>
+        <span :class="!useVerifiersBits ? 'text-black font-medium' : 'text-gray-600'">Use Verifier's challenge bits</span>
         <button
           type="button"
           @click="useVerifiersBits = !useVerifiersBits"
@@ -207,6 +207,131 @@
           Send y →
         </button>
         <p class="block w-full text-center text-green-600 font-semibold">{{ ySendStatusText }}</p>
+      </div>
+
+      <!-- Step-by-step Info Box -->
+      <div class="space-y-4 p-4 bg-gray-50 rounded-lg border border-black-200">
+        <!-- Good Prover Steps -->
+        <div v-if="!useVerifiersBits">
+          <!-- Step 1: Generate r -->
+          <div v-if="!coprimeR" class="text-gray-700">
+            <h3 class="font-semibold">Step 1/7: Generate Random Number</h3>
+            <p>Click "Generate" to create a random number r that is coprime to the Blum integer n.</p>
+            <p class="text-gray-500">This random number will be used to create your commitment and is kept secret.</p>
+            <p class="text-gray-500">Being coprime means gcd(r, n) = 1, ensuring the math works correctly.</p>
+          </div>
+
+          <!-- Step 2: Compute x -->
+          <div v-else-if="coprimeR && !commitmentX" class="text-gray-700">
+            <h3 class="font-semibold">Step 2/7: Compute Commitment</h3>
+            <p>Now compute the commitment x using the formula x = r² mod n.</p>
+            <p class="text-gray-500">This commitment will be sent to the verifier before receiving the challenge.</p>
+            <p class="text-gray-500">The commitment hides your random value r while binding you to it.</p>
+          </div>
+
+          <!-- Step 3: Send x -->
+          <div v-else-if="commitmentX && statusMessage === ''" class="text-gray-700">
+            <h3 class="font-semibold">Step 3/7: Send Commitment</h3>
+            <p>Send your commitment x to the verifier.</p>
+            <p class="text-gray-500">This starts the zero-knowledge proof protocol.</p>
+            <p class="text-gray-500">After sending, you'll wait for the verifier's challenge bits.</p>
+          </div>
+
+          <!-- Step 4: Wait for challenge -->
+          <div v-else-if="challengeBitsLoading" class="text-gray-700">
+            <h3 class="font-semibold">Step 4/7: Waiting for Challenge</h3>
+            <p>Waiting for the verifier to send challenge bits.</p>
+            <p class="text-gray-500">The verifier will send a random sequence of 0s and 1s.</p>
+            <p class="text-gray-500">These bits determine which secrets you'll use in your response.</p>
+          </div>
+
+          <!-- Step 5: Enter secrets -->
+          <div v-else-if="challengeBits.length > 0 && !secrets" class="text-gray-700">
+            <h3 class="font-semibold">Step 5/7: Enter Your Secrets</h3>
+            <p>Enter your secret values that you generated during registration.</p>
+            <p class="text-gray-500">Make sure to enter them in the correct order!</p>
+          </div>
+
+          <!-- Step 6: Compute y -->
+          <div v-else-if="secrets && !responseY" class="text-gray-700">
+            <h3 class="font-semibold">Step 6/7: Compute Response</h3>
+            <p>Compute your response y using the formula.</p>
+            <p class="text-gray-500">Each secret sᵢ is raised to the power of the corresponding challenge bit cᵢ.</p>
+          </div>
+
+          <!-- Step 7: Send y -->
+          <div v-else-if="responseY && ySendStatusText === ''" class="text-gray-700">
+            <h3 class="font-semibold">Step 7/7: Send Response</h3>
+            <p>Send your response y to complete the proof.</p>
+            <p class="text-gray-500">If this equation holds, you've successfully proven knowledge of your secrets!</p>
+          </div>
+
+          <!-- Proof complete -->
+          <div v-else-if="ySendStatusText !== ''" class="text-gray-700">
+            <h3 class="font-semibold">Proof Complete!</h3>
+            <p class="text-green-600">✓ You've successfully completed the zero-knowledge proof.</p>
+            <p class="text-gray-500">The verifier can now verify your response without learning your secrets.</p>
+          </div>
+        </div>
+
+        <!-- Evil Prover Steps -->
+        <div v-else>
+          <!-- Step 1: Generate forged y -->
+          <div v-if="!forgedY" class="text-gray-700">
+            <h3 class="font-semibold">Step 1/6: Generate Forged Response</h3>
+            <p>Generate a random y value that will be your forged response.</p>
+            <p class="text-gray-500">In this attempt, you start with the response instead of computing it honestly.</p>
+          </div>
+
+          <!-- Step 2: Predict challenge bits -->
+          <div v-else-if="forgedY && !evilBits" class="text-gray-700">
+            <h3 class="font-semibold">Step 2/6: Predict Challenge Bits</h3>
+            <p>Enter the challenge bits you predict the verifier will send.</p>
+            <p class="text-gray-500">If you can correctly guess these bits, you can forge a valid proof.</p>
+          </div>
+
+          <!-- Step 3: Compute forged x -->
+          <div v-else-if="evilBits && !forgedX" class="text-gray-700">
+            <h3 class="font-semibold">Step 3/6: Compute Forged Commitment</h3>
+            <p>Compute a forged commitment x that will make the verification pass.</p>
+            <p class="text-gray-500">Using the inverse formula.</p>
+          </div>
+
+          <!-- Step 4: Send forged x -->
+          <div v-else-if="forgedX && sendForgedXStatus === ''" class="text-gray-700">
+            <h3 class="font-semibold">Step 4/6: Send Forged Commitment</h3>
+            <p>Send your forged commitment to the verifier.</p>
+            <p class="text-gray-500">The verifier doesn't know this commitment was computed backwards.</p>
+            <p class="text-gray-500">Now you must hope the actual challenge matches your prediction!</p>
+          </div>
+
+          <!-- Step 5: Wait for actual challenge -->
+          <div v-else-if="challengeBitsLoading" class="text-gray-700">
+            <h3 class="font-semibold">Step 5/6: Waiting for Actual Challenge</h3>
+            <p>Waiting for the verifier's actual challenge bits.</p>
+            <p class="text-gray-500">If they match your prediction, your forgery will succeed.</p>
+            <p class="text-gray-500">If they don't match, the verification will fail!</p>
+          </div>
+
+          <!-- Step 6: Send forged y -->
+          <div v-else-if="challengeBits.length > 0 && ySendStatusText === ''" class="text-gray-700">
+            <h3 class="font-semibold">Step 6/6: Send Forged Response</h3>
+            <p>Send your pre-generated y value.</p>
+            <p class="text-gray-500">Received challenge: {{ challengeBits.join('') }}</p>
+            <p class="text-gray-500">Your prediction: {{ evilBits }}</p>
+            <p :class="challengeBits.join('') === evilBits ? 'text-green-600' : 'text-red-600'">
+              {{ challengeBits.join('') === evilBits ? '✓ Prediction correct - forgery will succeed!' : '✗ Prediction wrong - verification will fail!' }}
+            </p>
+          </div>
+
+          <!-- Forgery attempt complete -->
+          <div v-else-if="ySendStatusText !== ''" class="text-gray-700">
+            <h3 class="font-semibold">Forgery Attempt Complete!</h3>
+            <p :class="challengeBits.join('') === evilBits ? 'text-green-600' : 'text-red-600'">
+              {{ challengeBits.join('') === evilBits ? '✓ Your forgery succeeded because you correctly predicted the challenge!' : '✗ Your forgery failed because the challenge didn\'t match your prediction.' }}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
 
