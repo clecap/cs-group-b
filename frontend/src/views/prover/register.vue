@@ -5,7 +5,7 @@
 
 // Layout and Vue core functionality
 import BaseLayout from '../../layouts/BaseLayout.vue';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 
 // API and utility functions
@@ -44,6 +44,19 @@ const showPublicKeysInfo = ref(false);
 // UI feedback states
 const errorMessage = ref('');
 const copySuccess = ref(false);
+
+// Registration state
+const registering = ref(false);
+const registrationComplete = ref(false);
+
+// ========================
+// COMPUTED PROPERTIES FOR STEP TRACKING
+// ========================
+
+const hasUsername = computed(() => username.value.trim() !== '');
+const hasBlumInteger = computed(() => blumInteger.value !== '');
+const hasPublicKeys = computed(() => publicKeys.value.length > 0);
+const readyToRegister = computed(() => hasUsername.value && hasBlumInteger.value && hasPublicKeys.value);
 
 
 // ========================
@@ -230,6 +243,8 @@ const handleRegister = async () => {
     return;
   }
   
+  registering.value = true;
+  
   try {
     // Prepare the payload according to the API specification
     const payload = {
@@ -245,8 +260,12 @@ const handleRegister = async () => {
     
     console.log('Registration response:', response.data);
     
-    // On successful registration, navigate to the prover page
-    router.push(`/prover/${username.value}`);
+    registrationComplete.value = true;
+    
+    // On successful registration, navigate to the prover page after a short delay
+    setTimeout(() => {
+      router.push(`/prover/${username.value}`);
+    }, 1500);
   } catch (error) {
     // Handle various error scenarios
     console.error('Registration failed:', error);
@@ -272,6 +291,8 @@ const handleRegister = async () => {
       // Something else went wrong
       errorMessage.value = 'Registration failed. Please try again.';
     }
+  } finally {
+    registering.value = false;
   }
 };
 </script>
@@ -434,10 +455,62 @@ const handleRegister = async () => {
           <button
             @click="handleRegister"
             class="px-8 py-3 bg-black text-white rounded-full hover:bg-gray-800 transition font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
-            :disabled="!username || !blumInteger || publicKeys.length === 0"
+            :disabled="!username || !blumInteger || publicKeys.length === 0 || registering"
           >
-            Register
+            {{ registering ? 'Registering...' : 'Register' }}
           </button>
+        </div>
+
+
+        <!-- ======================== -->
+        <!-- STEP-BY-STEP INFO BOX -->
+        <!-- ======================== -->
+        
+        <div class="space-y-4 p-4 bg-gray-50 rounded-lg border border-black-200">
+          <!-- Step 1: Initial State -->
+          <div v-if="!hasUsername" class="text-gray-700">
+            <h3 class="font-semibold">Step 1/5: Choose Username</h3>
+            <p>Start by choosing a unique username for your prover identity.</p>
+            <p class="text-gray-500">This username will be used to identify you during the zero-knowledge proof process.</p>
+            <p class="text-gray-500">Make sure to remember it as you'll need it to access your prover interface later.</p>
+          </div>
+
+          <!-- Step 2: Get Blum Integer -->
+          <div v-else-if="hasUsername && !hasBlumInteger" class="text-gray-700">
+            <h3 class="font-semibold">Step 2/5: Get Blum Integer</h3>
+            <p>Click the button to obtain a Blum integer from the server.</p>
+            <p class="text-gray-500">A Blum integer is a special number that is the product of two prime numbers, both congruent to 3 mod 4.</p>
+          </div>
+
+          <!-- Step 3: Generate Secrets -->
+          <div v-else-if="hasBlumInteger && !secretsGenerated" class="text-gray-700">
+            <h3 class="font-semibold">Step 3/5: Generate Secret Numbers</h3>
+            <p>Specify how many secret numbers you want to generate, then click the arrow button.</p>
+            <p class="text-gray-500">These secrets must be coprime to the Blum integer (their greatest common divisor is 1).</p>
+            <p class="text-gray-500">The system will automatically generate random coprime numbers for you.</p>
+          </div>
+
+          <!-- Step 4: Public Keys Computed -->
+          <div v-else-if="secretsGenerated && !readyToRegister" class="text-gray-700">
+            <h3 class="font-semibold">Step 4/5: Public Keys Computed</h3>
+            <p>Your public keys have been automatically calculated from your secrets.</p>
+            <p class="text-gray-500">Each public key tᵢ is computed as sᵢ² mod n, where sᵢ is your secret and n is the Blum integer.</p>
+            <p class="text-gray-500">These public keys will be shared with verifiers while your secrets remain private.</p>
+          </div>
+
+          <!-- Step 5: Ready to Register -->
+          <div v-else-if="readyToRegister && !registrationComplete" class="text-gray-700">
+            <h3 class="font-semibold">Step 5/5: Ready to Register</h3>
+            <p>All required information has been provided. Click the Register button to complete the process.</p>
+            <p class="text-gray-500">Your username, Blum integer, and public keys will be sent to the server.</p>
+            <p class="text-gray-500">After successful registration, you'll be redirected to your prover interface.</p>
+          </div>
+
+          <!-- Registration Complete -->
+          <div v-else-if="registrationComplete" class="text-gray-700">
+            <h3 class="font-semibold">Registration Complete!</h3>
+            <p class="text-green-600">✓ Successfully registered as a prover.</p>
+          </div>
         </div>
       </div>
       
