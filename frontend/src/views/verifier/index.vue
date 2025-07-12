@@ -555,16 +555,20 @@ const verification = (y, x, t, c, n) => {
       
       <!-- Public Keys Information Modal -->
       <div v-if="showPublicKeysInfo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
-          <div class="flex justify-between items-center mb-4">
+        <div class="bg-white rounded-lg max-w-2xl mx-4 max-h-[80vh] flex flex-col">
+          <!-- Fixed Header -->
+          <div class="flex justify-between items-center p-6 pb-4 border-b">
             <h3 class="text-lg font-semibold">Information</h3>
             <button @click="showPublicKeysInfo = false" class="text-gray-500 hover:text-gray-700 text-xl">×</button>
           </div>
-          <div class="space-y-2">
-            <p class="font-medium">The Provers Public Keys (tᵢ = sᵢ² mod n):</p>
-            <div class="font-mono text-sm space-y-1">
-              <div v-for="(pk, index) in pubKeys ">
-                t{{index}}: {{ pk }}  
+          <!-- Scrollable Content -->
+          <div class="p-6 pt-4 overflow-y-auto">
+            <div class="space-y-2">
+              <p class="font-medium">The Provers Public Keys (tᵢ = sᵢ² mod n):</p>
+              <div class="font-mono text-sm space-y-1">
+                <div v-for="(pk, index) in pubKeys ">
+                  t{{index}}: {{ pk }}  
+                </div>
               </div>
             </div>
           </div>
@@ -573,15 +577,19 @@ const verification = (y, x, t, c, n) => {
 
       <!-- Commitment Modal -->
       <div v-if="showCommitmentInfo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
-          <div class="flex justify-between items-center mb-4">
+        <div class="bg-white rounded-lg max-w-2xl mx-4 max-h-[80vh] flex flex-col">
+          <!-- Fixed Header -->
+          <div class="flex justify-between items-center p-6 pb-4 border-b">
             <h3 class="text-lg font-semibold">Information</h3>
             <button @click="showCommitmentInfo = false" class="text-gray-500 hover:text-gray-700 text-xl">×</button>
           </div>
-          <div class="space-y-2">
-            <p class="font-medium">The Commitment from the prover:</p>
-            <div class="font-mono text-sm space-y-1">
-              x: {{ xValue }}
+          <!-- Scrollable Content -->
+          <div class="p-6 pt-4 overflow-y-auto">
+            <div class="space-y-2">
+              <p class="font-medium">The Commitment from the prover:</p>
+              <div class="font-mono text-sm space-y-1 break-all">
+                x: {{ xValue }}
+              </div>
             </div>
           </div>
         </div>
@@ -589,15 +597,19 @@ const verification = (y, x, t, c, n) => {
 
       <!-- Y  Modal -->
       <div v-if="showYInfo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
-          <div class="flex justify-between items-center mb-4">
+        <div class="bg-white rounded-lg max-w-2xl mx-4 max-h-[80vh] flex flex-col">
+          <!-- Fixed Header -->
+          <div class="flex justify-between items-center p-6 pb-4 border-b">
             <h3 class="text-lg font-semibold">Information</h3>
             <button @click="showYInfo = false" class="text-gray-500 hover:text-gray-700 text-xl">×</button>
           </div>
-          <div class="space-y-2">
-            <p class="font-medium"> y</p>
-            <div class="font-mono text-sm space-y-1">
-              y {{ yValue }}
+          <!-- Scrollable Content -->
+          <div class="p-6 pt-4 overflow-y-auto">
+            <div class="space-y-2">
+              <p class="font-medium"> y</p>
+              <div class="font-mono text-sm space-y-1 break-all">
+                y {{ yValue }}
+              </div>
             </div>
           </div>
         </div>
@@ -606,15 +618,19 @@ const verification = (y, x, t, c, n) => {
 
       <!-- y^2 mod n  Modal -->
       <div v-if="showySquaredModNInfo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
-          <div class="flex justify-between items-center mb-4">
+        <div class="bg-white rounded-lg max-w-2xl mx-4 max-h-[80vh] flex flex-col">
+          <!-- Fixed Header -->
+          <div class="flex justify-between items-center p-6 pb-4 border-b">
             <h3 class="text-lg font-semibold">Information</h3>
             <button @click="showySquaredModNInfo = false" class="text-gray-500 hover:text-gray-700 text-xl">×</button>
           </div>
-          <div class="space-y-2">
-            <p class="font-medium"> x × t₁^c₁ × ... mod n:  </p>
-            <div class="font-mono text-sm space-y-1">
-              {{ verificationResult.productModN }}
+          <!-- Scrollable Content -->
+          <div class="p-6 pt-4 overflow-y-auto">
+            <div class="space-y-2">
+              <p class="font-medium"> x × t₁^c₁ × ... mod n:  </p>
+              <div class="font-mono text-sm space-y-1 break-all">
+                {{ verificationResult.productModN }}
+              </div>
             </div>
           </div>
         </div>
@@ -623,15 +639,19 @@ const verification = (y, x, t, c, n) => {
 
       <!-- productModNInfo Modal -->
       <div v-if="showProductModNInfo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
-          <div class="flex justify-between items-center mb-4">
+        <div class="bg-white rounded-lg max-w-2xl mx-4 max-h-[80vh] flex flex-col">
+          <!-- Fixed Header -->
+          <div class="flex justify-between items-center p-6 pb-4 border-b">
             <h3 class="text-lg font-semibold">Information</h3>
             <button @click="showProductModNInfo = false" class="text-gray-500 hover:text-gray-700 text-xl">×</button>
           </div>
-          <div class="space-y-2">
-            <p class="font-medium">y² mod n : :</p>
-            <div class="font-mono text-sm space-y-1">
-              y² mod n : {{ verificationResult.ySquaredModN }}
+          <!-- Scrollable Content -->
+          <div class="p-6 pt-4 overflow-y-auto">
+            <div class="space-y-2">
+              <p class="font-medium">y² mod n : :</p>
+              <div class="font-mono text-sm space-y-1 break-all">
+                y² mod n : {{ verificationResult.ySquaredModN }}
+              </div>
             </div>
           </div>
         </div>
