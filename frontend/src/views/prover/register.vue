@@ -462,16 +462,20 @@ const handleRegister = async () => {
       
       <!-- Public Keys Information Modal -->
       <div v-if="showPublicKeysInfo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
-          <div class="flex justify-between items-center mb-4">
+        <div class="bg-white rounded-lg max-w-2xl mx-4 max-h-[80vh] flex flex-col">
+          <!-- Fixed Header -->
+          <div class="flex justify-between items-center p-6 pb-4 border-b">
             <h3 class="text-lg font-semibold">Information</h3>
             <button @click="showPublicKeysInfo = false" class="text-gray-500 hover:text-gray-700 text-xl">×</button>
           </div>
-          <div class="space-y-2">
-            <p class="font-medium">Computed Public Keys (tᵢ = sᵢ² mod n):</p>
-            <div class="font-mono text-sm space-y-1">
-              <div v-for="pk in publicKeys" :key="pk.index">
-                t{{ pk.index }} = {{ pk.secret }}² mod {{ blumInteger }} = {{ pk.publicKey }}
+          <!-- Scrollable Content -->
+          <div class="p-6 pt-4 overflow-y-auto">
+            <div class="space-y-2">
+              <p class="font-medium">Computed Public Keys (tᵢ = sᵢ² mod n):</p>
+              <div class="font-mono text-sm space-y-1">
+                <div v-for="pk in publicKeys" :key="pk.index">
+                  t{{ pk.index }} = {{ pk.secret }}² mod {{ blumInteger }} = {{ pk.publicKey }}
+                </div>
               </div>
             </div>
           </div>
