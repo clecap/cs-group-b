@@ -509,40 +509,26 @@ const verification = (y, x, t, c, n) => {
           </p>
         </div>     -->
           <div v-if="public_keys_received && (!commitment_received)" class="text-gray-700">
-            <h3 class="font-semibold">Step 2/6 Waiting for commitment</h3>
-            <p>After receiving the public keys the next step is for the proover to send the Commitment</p>
-            <p class="text-gray-500">Commitment is a value that is used to prove that the prover has the knowledge of
-              the secret without revealing it.</p>
-            <p class="text-gray-500">Following that we will send the challenge bits</p>
+            <h3 class="font-semibold">Step 2/5 Waiting for commitment</h3>
+            <p>With knowledge of the public keys and the Blum Integer, the next step is for the proover to send the commitment</p>
+            <p>This commitment prevents the Prover from adapting the responce after we have sent our challenge bits </p>
           </div>
 
           <div v-else-if="commitment_received && !challenge_sent" class="text-gray-700">
-            <h3 class="font-semibold">Step 3/6 Generate and send challenge</h3>
+            <h3 class="font-semibold">Step 3/5 Generate and send challenge</h3>
             <p>After receiving the commitment, the next step is to generate and send the challenge.</p>
-            <p class="text-gray-500">The challenge is a random sequence of bits that is used to verify the response from
-              the prover.</p>
+            <p>The challenge is a random sequence of bits that is used by the prover to calculate the responce and for us to verify the response</p>
           </div>
           <div v-else-if="challenge_sent && !y_received" class="text-gray-700">
-            <h3 class="font-semibold">Step 4/6 Waiting for y</h3>
-            <p>After receiving the commitment, the next step is for the prover to send the y value.</p>
-            <p class="text-gray-500">The y value is used to verify the response from the prover.</p>
-          </div>
-          <div v-else-if="y_received && !verificationResult" class="text-gray-700">
-            <h3 class="font-semibold">Step 5/6 Waiting for verification</h3>
-            <p>After receiving the y value, the next step is to verify the response from the prover.</p>
-            <p class="text-gray-500">The verification is done by
-              checking if the y² mod n equals the product of x and t₁^c₁ × ... mod n.</p>
+            <h3 class="font-semibold">Step 4/5 Waiting for y</h3>
+            <p>After receiving the commitment, the next step is for the prover to send the responce y to our challenge </p>
           </div>
           <div v-else-if="verificationResult" class="text-gray-700">
-            <h3 class="font-semibold">Step 6/6 Verification Result</h3>
+            <h3 class="font-semibold">Step 5/5 Verification </h3>
             <p>The verification result is displayed above.</p>
-            <p class="text-gray-500">If the verification succeeded, it means the prover has the knowledge of the secret
+            <p>If the verification succeeded, it means the prover has proven knowledge of the secret
               without revealing it.</p>
-          </div>
-          <div v-else class="text-gray-700">
-            <h3 class="font-semibold">Step 1/6 Waiting for public keys</h3>
-            <p>Waiting for the public keys from the prover.</p>
-            <p class="text-gray-500">The public keys are used to verify the response from the prover.</p>
+            <p>The verification is done by checking if the y² mod n equals the product of x t₁^c₁  ... mod n.</p>
           </div>
         </div>
 
