@@ -27,7 +27,7 @@ const navigateToVerifier = () => {
           @click="navigateToProver"
           class="border border-black rounded-xl p-3 flex items-center hover:bg-gray-100 transition cursor-pointer w-48 justify-center"
         >
-          <span>Register as Prover</span>
+          <span>Prover</span>
         </button>
 
         <!-- Verifier button -->
@@ -35,7 +35,7 @@ const navigateToVerifier = () => {
           @click="navigateToVerifier"
           class="border border-black rounded-xl p-3 flex items-center hover:bg-gray-100 transition cursor-pointer w-48 justify-center"
         >
-          <span>Verify as Verifier</span>
+          <span>Verifier</span>
         </button>
       </div>
     </template>
