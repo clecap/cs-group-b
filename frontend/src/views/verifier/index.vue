@@ -328,7 +328,7 @@ const verification = (y, x, t, c, n) => {
           <div v-if="user_info_received" class="font-mono text-sm">
             Using {{ numberofKeys }} public keys                 
             <button @click= "showPublicKeysInfo= true" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
-              <i>i</i>
+              <i>show</i>
             </button>
           </div>
 
@@ -347,10 +347,15 @@ const verification = (y, x, t, c, n) => {
         <!-- Commitment Section -->
         <div v-if="public_keys_received" class="space-y-2">
 
+          <div class="space-y-4">
+            <span class="text-lg font-semibold">
+            Commitment from the prover
+            </span>
+          </div>
           <div v-if="commitment_received" class="font-mono text-sm">
             received commitment       
               <button @click= "showCommitmentInfo= true" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
-              <i>i</i>
+              <i>show</i>
             </button>
           </div>
           <div v-else class="text-gray-700">Waiting for commitment.......</div>
@@ -437,9 +442,13 @@ const verification = (y, x, t, c, n) => {
 
         <!-- Waiting for Y -->
         <div v-if="challenge_sent" class="space-y-2">
+            <span class="text-lg font-semibold">
+            Response from the prover
+            </span>
           <div v-if="y_received" class="font-mono text-sm">
+            The prover has send the response 
             <button @click= "showYInfo= true" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
-              <i>i</i>
+              <i>show</i>
             </button>
           </div>
           <div v-else class="text-gray-700">Waiting for y......</div>
