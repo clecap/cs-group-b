@@ -333,6 +333,16 @@
           </div>
         </div>
       </div>
+
+      <!-- Close Button -->
+        <div class="flex justify-center mt-8">
+          <button @click="goHome"
+            class="px-8 py-3 bg-gray-900 text-white rounded-full hover:bg-gray-800 transition font-medium">
+            Close
+          </button>
+
+        </div>
+
     </div>
 
     <!-- Modal -->
@@ -343,7 +353,7 @@
 
 <script setup>
 import { ref, onMounted, computed  } from 'vue';
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import socket from '@/helpers/socket';
 import BaseLayout from '@/layouts/BaseLayout.vue';
 import { checkUserRegistered, generateRandomCoprime, forgeCommitment } from '@/helpers/utility'
@@ -352,6 +362,9 @@ import InfoModal from '@/components/InfoModal.vue'
 
 
 const route = useRoute()
+const router = useRouter();
+
+
 const username = ref('Username')
 const useVerifiersBits = ref(false)
 const coprimeR = ref(null)
@@ -404,6 +417,10 @@ function onToggle() {
   useVerifiersBits.value = !useVerifiersBits.value
   challengeBits.value = []
 }
+
+function goHome () {
+  router.push('/');
+};
 
 //Good prover
 
