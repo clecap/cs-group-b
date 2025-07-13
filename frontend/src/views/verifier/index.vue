@@ -228,6 +228,27 @@ const isInvalid = computed(() =>
   manualChallenge.value.length > 0 && !onlyBinary.value
 )
 
+
+const sendResult = () => {
+  // try {
+  //   if (!verificationResult || verificationResult.value  !== 'object') {
+  //     throw new Error('Invalid result format');
+  //   }
+  // } catch (error) {
+  //   console.error('Error sending verification result:', error);
+  //   return;
+  // }
+  try {
+    console.log('Sending verification result:', verificationResult);
+    socket.emit('verification_result', {success: verificationResult.value.success});
+  } catch (error) {
+    console.error('Socket connection error:', error);
+    return;
+  }
+
+};
+
+
 const sendChallenge = () => {
 
   if (isInvalid.value) {
@@ -315,6 +336,7 @@ const verification = (y, x, t, c, n) => {
     ySquaredModN,
     productModN
   };
+  sendResult(); // Send the verification result via socket
 };
 
 

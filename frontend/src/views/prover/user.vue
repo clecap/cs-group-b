@@ -411,12 +411,43 @@ const isInvalid = computed(() =>
   evilBits.value.length > 0 && (!correctLength.value || !onlyBinary.value)
 )
 
+
+
+
+
+
+/// verification result
+
+const verificationResult = ref(null); // the dict itselft
+
+
+
+
+
+
 socket.on('challenge_bits_received', (data) => {
   if(data.challenge) {
     challengeBits.value = data.challenge;
     challengeBitsLoading.value = false;
   }
 })
+
+socket.on('verification_result', (data) => {
+console.log('Received verification result:', data);
+
+
+  
+  // Show the result in a modal
+
+if (data.success)
+
+onShowModal('✓ Verification successful!', 'Verification Result');
+  else
+    onShowModal('✗ Verification failed!', 'Verification Result');
+  verificationResult.value = data.success;
+
+  
+});
 
 function onToggle() {
   useVerifiersBits.value = !useVerifiersBits.value
