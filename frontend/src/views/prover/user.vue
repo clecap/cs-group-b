@@ -19,7 +19,7 @@
         <span :class="!useVerifiersBits ? 'text-black font-medium' : 'text-gray-600'">Use Verifier's challenge bits</span>
         <button
           type="button"
-          @click="useVerifiersBits = !useVerifiersBits"
+          @click="onToggle"
           class="mx-4 relative w-14 h-8 flex items-center rounded-full transition-colors duration-200 focus:outline-none"
           :class="useVerifiersBits ? 'bg-black' : 'bg-gray-300'"
           :disabled="challengeBitsLoading"
@@ -206,7 +206,7 @@
         >
           Send y →
         </button>
-        <p class="block w-full text-center text-green-600 font-semibold">{{ ySendStatusText }}</p>
+        <p class="block w-full text-center text-green-600 font-semibold">{{ forgedYSendStatusText }}</p>
       </div>
 
       <!-- Step-by-step Info Box -->
@@ -314,7 +314,7 @@
           </div>
 
           <!-- Step 6: Send forged y -->
-          <div v-else-if="challengeBits.length > 0 && ySendStatusText === ''" class="text-gray-700">
+          <div v-else-if="challengeBits.length > 0 && forgedYSendStatusText === ''" class="text-gray-700">
             <h3 class="font-semibold">Step 6/6: Send Forged Response</h3>
             <p>Send your pre-generated y value.</p>
             <p class="text-gray-500">Received challenge: {{ challengeBits.join('') }}</p>
@@ -325,7 +325,7 @@
           </div>
 
           <!-- Forgery attempt complete -->
-          <div v-else-if="ySendStatusText !== ''" class="text-gray-700">
+          <div v-else-if="forgedYSendStatusText !== ''" class="text-gray-700">
             <h3 class="font-semibold">Forgery Attempt Complete!</h3>
             <p :class="challengeBits.join('') === evilBits ? 'text-green-600' : 'text-red-600'">
               {{ challengeBits.join('') === evilBits ? '✓ Your forgery succeeded because you correctly predicted the challenge!' : '✗ Your forgery failed because the challenge didn\'t match your prediction.' }}
@@ -364,6 +364,7 @@ const responseY = ref('')
 const blumN = ref(null)
 const pubKeys = ref([])
 const ySendStatusText = ref('')
+const forgedYSendStatusText = ref('')
 const numberOfChallengeBits = ref(0)
 const challengeBitsLoading = ref(false)
 const showModal = ref(false)
@@ -398,6 +399,11 @@ socket.on('challenge_bits_received', (data) => {
     challengeBitsLoading.value = false;
   }
 })
+
+function onToggle() {
+  useVerifiersBits.value = !useVerifiersBits.value
+  challengeBits.value = []
+}
 
 //Good prover
 
@@ -520,12 +526,12 @@ function sendForgedY() {
   }
 
   if (!forgedY.value) {
-    ySendStatusText.value = 'Please compute y before sending';
+    forgedYSendStatusText.value = 'Please compute y before sending';
     return;
   }
 
   socket.emit('publish_response_y', { response_y: forgedY.value });
-  ySendStatusText.value = '✓ Response y has Been Published';
+  forgedYSendStatusText.value = '✓ Response y has Been Published';
 }
 
 function onShowModal(_content, _subtitle) {
