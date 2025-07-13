@@ -470,7 +470,7 @@ const verification = (y, x, t, c, n) => {
             
             </div>
             <div>x × t₁^c₁ × ... mod n =            
-              <button @click= "showySquaredModNInfo= true" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
+              <button @click= "showProductModNInfo= true" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
                 <i>show number</i>
               </button>
             </div>
@@ -616,13 +616,13 @@ const verification = (y, x, t, c, n) => {
       </div>
 
 
-      <!-- y^2 mod n  Modal -->
-      <div v-if="showySquaredModNInfo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <!-- productModNInfo Modal -->
+      <div v-if="showProductModNInfo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg max-w-2xl mx-4 max-h-[80vh] flex flex-col">
           <!-- Fixed Header -->
           <div class="flex justify-between items-center p-6 pb-4 border-b">
             <h3 class="text-lg font-semibold">Information</h3>
-            <button @click="showySquaredModNInfo = false" class="text-gray-500 hover:text-gray-700 text-xl">×</button>
+            <button @click="showProductModNInfo = false" class="text-gray-500 hover:text-gray-700 text-xl">×</button>
           </div>
           <!-- Scrollable Content -->
           <div class="p-6 pt-4 overflow-y-auto">
@@ -637,13 +637,13 @@ const verification = (y, x, t, c, n) => {
       </div>
 
 
-      <!-- productModNInfo Modal -->
-      <div v-if="showProductModNInfo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <!-- y^2 mod n  Modal -->
+      <div v-if="showySquaredModNInfo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg max-w-2xl mx-4 max-h-[80vh] flex flex-col">
           <!-- Fixed Header -->
           <div class="flex justify-between items-center p-6 pb-4 border-b">
             <h3 class="text-lg font-semibold">Information</h3>
-            <button @click="showProductModNInfo = false" class="text-gray-500 hover:text-gray-700 text-xl">×</button>
+            <button @click="showySquaredModNInfo = false" class="text-gray-500 hover:text-gray-700 text-xl">×</button>
           </div>
           <!-- Scrollable Content -->
           <div class="p-6 pt-4 overflow-y-auto">
