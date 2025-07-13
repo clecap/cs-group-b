@@ -130,7 +130,18 @@ const discribe_keys = (keys) => {
   /// assumption!   the keys are all of the same bit length, but that should be the case anyway, right?
   let bitlength = keys[0].toString(2).length; // Calculate the bit length of the first key
 
-  let result = keys.length+ " keys, with " + bitlength + " bits each";
+  
+  if (2048 - bitlength <= 5) {
+    //// there is some small deviation....
+    bitlength = 2048; 
+  } else  {
+    bitlength = bitlength;
+    // keep as is
+    //TODO: make this depend on the desired size set in the config file
+  }
+  
+
+  let result = keys.length+ " keys, with ~" + bitlength + " bits each";
   return result;
 };
 

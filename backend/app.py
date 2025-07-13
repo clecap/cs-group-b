@@ -34,6 +34,11 @@ def sendChallenge(data):
     emit("challenge_bits_received", data, broadcast=True)
 
 
+@socketio.on("verification_result")
+def verificationResult(data):
+    emit("verification_result", data, broadcast=True)
+
+
 # close db connection after every request
 @app.teardown_appcontext
 def close_connection(exception):
