@@ -11,7 +11,11 @@
       <!-- Current user -->
       <p class="font-medium">
         Current user:
-        <span class="font-bold">{{ username }}</span>
+        <span class="font-bold">{{ username }}, 
+          <button v-if="blumN" @click="onShowModal(blumN, BlumIntegerSubtitle)" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
+              <i>show Blum Integer</i>
+            </button>
+          </span>
       </p>
 
       <!-- Toggle -->
@@ -387,6 +391,7 @@ const modalSubtitle = ref('')
 const coprimeModalSubtitle = 'Random coprime of blum integer n, r is:';
 const commitmentModalSubtitle = 'Commitment x is:';
 const yModalSubtitle = 'Response y is:';
+const BlumIntegerSubtitle = 'Blum Integer n is:';
 
 const forgedYModalSubtitle = 'Forged Y is:';
 
