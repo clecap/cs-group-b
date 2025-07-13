@@ -4,7 +4,7 @@ import { useRouter, useRoute } from 'vue-router';
 import socket from '@/helpers/socket';
 import { ref, onMounted, computed } from 'vue';
 import api from '@/helpers/api';
-
+import InfoModal from '@/components/InfoModal.vue'
 
 const router = useRouter();
 const route = useRoute();
@@ -81,7 +81,12 @@ const showYInfo = ref(false);
 const showySquaredModNInfo = ref(false);
 const showProductModNInfo = ref(false);
 
+const BlumIntegerSubtitle = 'Blum Integer n is:';
 
+// proper modal
+const showModal = ref(false)
+const content = ref('')
+const modalSubtitle = ref('')
 
 const button_y_received = () => {
   // Simulate receiving y value
@@ -125,6 +130,12 @@ const button_acknowledge_public_keys = () => {
   // this is just a stub for now...
   console.log('Simulated public keys:', pubKeys.value);
 };
+
+function onShowModal(_content, _subtitle) {
+  showModal.value = true;
+  modalSubtitle.value = _subtitle;
+  content.value = _content.toString();
+}
 
 onMounted(() => {
 
@@ -329,7 +340,10 @@ const verification = (y, x, t, c, n) => {
             Using {{ numberofKeys }} public keys                 
             <button @click= "showPublicKeysInfo= true" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
               <i>show</i>
-            </button>
+            </button>   and a Blum Integer
+            <button v-if="BlumInteger" @click="onShowModal(BlumInteger, BlumIntegerSubtitle)" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
+              <i>show </i>
+          </button>
           </div>
 
           <!--
@@ -652,7 +666,8 @@ const verification = (y, x, t, c, n) => {
         </div>
       </div>
 
-
+    <!-- Modal -->
+    <InfoModal :visible="showModal" @close="showModal = false" :content="content" :subtitle="modalSubtitle"/>
 
     </template>
   </BaseLayout>
