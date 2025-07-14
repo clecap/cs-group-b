@@ -14,28 +14,42 @@ const goHome = () => {
 };
 
 
+// variables..in seqquence of use
+
+
+// from the URL
 const query = route.query
 console.log(query) 
 const proverName = query.proverName; 
 
-
-
-const yValue = ref(0);
-const xValue = ref(0);
+// from the API
 const pubKeys = ref([]);
-
 const joinedPubKeysNewLines = computed(() => {
   return pubKeys.value.map((key, index) => `t${index} =\n ${key}`).join('\n\n');
 });
-
 const BlumInteger = ref(0);
-const numberofKeys = ref(0); 
-const challengeBits = ref([]); 
+const numberofKeys = ref(0);
 
-const verificationResult = ref(null);
+// commitment x from the prover
+const xValue = ref(0);
+
+// challenge bits
 const challengeMode = ref('auto');
 const challengeError = ref('');
 const manualChallenge = ref('');
+const challengeBits = ref([]); 
+
+const onlyBinary = computed(() => /^[01,]*$/.test(manualChallenge.value))
+const isInvalid = computed(() =>
+  manualChallenge.value.length > 0 && !onlyBinary.value
+)
+
+
+// response y from the prover
+const yValue = ref(0);
+
+// verification result
+const verificationResult = ref(null);
 
 
 // Boolean flags to track the state of the verification process
@@ -130,23 +144,15 @@ const handleGetUserInfo = async () => {
       alert("API error: received username not matching the send username")
     }
 
-
-
     pubKeys.value = response.data.pubKeys.split(','); // Split the comma-separated string into an array
-
 
     numberofKeys.value = pubKeys.value.length; // Update the number of public keys
     console.log('Number of public keys:', numberofKeys.value); 
 
-
-
     BlumInteger.value = response.data.blum; // Set the Blum integer
     console.log('Blum Integer:', BlumInteger.value); 
 
-
     user_info_received.value = true; // Set the flag to true after successfully receiving user info
-
-
   }
   catch (error) {
     console.error('Failed to get the user info', error)
@@ -160,11 +166,7 @@ const handleGetUserInfo = async () => {
 
 }
 
-const onlyBinary = computed(() => /^[01,]*$/.test(manualChallenge.value))
 
-const isInvalid = computed(() =>
-  manualChallenge.value.length > 0 && !onlyBinary.value
-)
 
 
 const sendResult = () => {
