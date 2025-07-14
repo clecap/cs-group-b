@@ -107,28 +107,6 @@ const handleGetBlumInteger = async () => {
   }
 };
 
-/**
- * Generates a simple Blum integer locally for testing purposes
- * A Blum integer is the product of two prime numbers that are congruent to 3 (mod 4)
- * This function is kept for local testing when API is unavailable
- */
-const generateBlumInteger = () => {
-  // Small primes for demo purposes
-  const primes = [7, 11, 19, 23, 31, 43, 47, 59, 67, 71, 79, 83, 103, 107];
-  
-  // Select first prime randomly
-  const p = primes[Math.floor(Math.random() * primes.length)];
-  
-  // Select second prime (different from first)
-  let q;
-  do {
-    q = primes[Math.floor(Math.random() * primes.length)];
-  } while (q === p);
-  
-  // Return the product
-  return p * q;
-};
-
 
 // ========================
 // SECRETS GENERATION FUNCTIONS
