@@ -87,10 +87,8 @@ onMounted(() => {
 
 
   socket.on('publish_response_y', (data) => {
-
-    console.log('Received response y:', data.response_y);
-    
     yValue.value =data.response_y;
+    console.log('yValue:', yValue.value);
     y_received.value = true;
 
     // Trigger verification after receiving y
@@ -106,6 +104,7 @@ onMounted(() => {
 
   socket.on('publish_commitment_x', (data) => {
     xValue.value = data.commitment_x;
+    console.log('Received commitment x:', xValue.value);
     commitment_received.value = true;
   });
 
@@ -118,12 +117,13 @@ const handleGetUserInfo = async () => {
 
 
   try {
+    console.log('pulled user info from API');
     const response = await api.get('user/info', {
       params: {
         username: proverName
       }
     })
-    console.log('API Response:', response.data);
+    console.debug('API Response:', response.data);
 
     if (response.data.username != proverName) {
       console.error("API error: received username not matching the send username")
@@ -136,12 +136,12 @@ const handleGetUserInfo = async () => {
 
 
     numberofKeys.value = pubKeys.value.length; // Update the number of public keys
-    console.log('Number of public keys:', numberofKeys.value); // Debug log
+    console.log('Number of public keys:', numberofKeys.value); 
 
 
 
     BlumInteger.value = response.data.blum; // Set the Blum integer
-    console.log('Blum Integer:', BlumInteger.value); // Debug log
+    console.log('Blum Integer:', BlumInteger.value); 
 
 
     user_info_received.value = true; // Set the flag to true after successfully receiving user info
@@ -201,11 +201,12 @@ const sendChallenge = () => {
   }
 
   socket.emit('send_challenge', { challenge: challengeBits.value });
+  console.log('Challenge sent:', challengeBits.value);
   challenge_sent.value = true;
 };
 
-// Example: Generate a random challenge
 const generateRandomChallenge = () => {
+  console.log('Generating random challenge');
   // random sequence of 0s and 1s of the length of the number of public keys
   const length = numberofKeys.value;
   let challenge = [];
@@ -231,21 +232,14 @@ const verification = (y, x, t, c, n) => {
   c = c.map(String); // Ensure challenge bits are strings
 
 
+  console.log('Starting verification...');
 
-  console.log('Verification called with:');
-  console.log('y:', y);
-  console.log('x:', x);
-  console.log('t:', t);
-  console.log('c:', c);
-  console.log('n:', n);
-
-
-
-  console.log('Type of y:', typeof y);
-  console.log('Type of x:', typeof x);
-  console.log('Type of t:', Array.isArray(t) ? 'Array' : typeof t);
-  console.log('Type of c:', Array.isArray(c) ? 'Array' : typeof c);
-  console.log('Type of n:', typeof n);
+  console.debug('Verification called with:');
+  console.debug('y, Type of y:', y, typeof y);
+  console.debug('x, Type of x:', x, typeof x);
+  console.debug('t, Type of t:', t, Array.isArray(t) ? 'Array' : typeof t);
+  console.debug('c, Type of c:', c, Array.isArray(c) ? 'Array' : typeof c);
+  console.debug('n, Type of n:', n, typeof n);
 
   const ySquaredModN = (y * y) % n;
 
@@ -266,6 +260,7 @@ const verification = (y, x, t, c, n) => {
     ySquaredModN,
     productModN
   };
+  console.log('Verification result:', verificationResult.value);
   sendResult(); // Send the verification result via socket
 };
 
