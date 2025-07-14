@@ -8,24 +8,21 @@ import InfoModal from '@/components/InfoModal.vue'
 
 const router = useRouter();
 const route = useRoute();
-import demo_values from '@/helpers/demo_values.json';
 
 const goHome = () => {
   router.push('/');
 };
 
 
-// placeholders..
-const receivedKeysMessage = ref('Public keys t₁, t₂, t₃ = xxxx, xxxx, xxxx');
-const receivedCommitmentXMessage = ref('Commitment, x: xxxx');
-
+const query = route.query
+console.log(query) 
+const proverName = query.proverName; 
 
 
 
 const yValue = ref(0);
 const xValue = ref(0);
 const pubKeys = ref([]);
-const joinedPubKeys = computed(() => pubKeys.value.join(', '));
 
 const joinedPubKeysNewLines = computed(() => {
   return pubKeys.value.map((key, index) => `t${index} =\n ${key}`).join('\n\n');
@@ -33,7 +30,6 @@ const joinedPubKeysNewLines = computed(() => {
 
 const BlumInteger = ref(0);
 const numberofKeys = ref(0); 
-const challenge_bit_str = ref('');
 const challengeBits = ref([]); 
 
 const verificationResult = ref(null);
@@ -45,9 +41,6 @@ const manualChallenge = ref('');
 // Boolean flags to track the state of the verification process
 
 const user_info_received = ref(false);
-
-const public_keys_received = ref(false);
-
 const commitment_received = ref(false);
 const challenge_sent = ref(false);
 const y_received = ref(false);
@@ -60,20 +53,7 @@ const loadingUserInfo = ref(false);
 //error messageplaceholder
 const errorMessage = ref('');
 
-const query = route.query
-console.log(query) // e.g., { search: 'vue', page: '2' }
-const proverName = query.proverName || 'Fallback_Prover'; // Get the username from the query params or use a fallback
 
-
-// getParams = () => {
-// //get the username from the query params
-// const query = router.currentRoute.value.query;
-// if (query && query.proverName) {
-//   prooverName.value = query.proverName; // Set the username from the query parameter
-// } else {
-//   prooverName.value = 'Fallback_Prover'; // Default value if not provided
-// }
-// };
 
 
 
@@ -92,48 +72,6 @@ const showModal = ref(false)
 const content = ref('')
 const modalSubtitle = ref('')
 
-const button_y_received = () => {
-  // Simulate receiving y value
-
-  y_received.value = true;
-  yValue.value = demo_values.y;
-
-
-  console.log('Simulated y value:', yValue.value);
-  console.log('Commitment x value:', xValue.value);
-  console.log('Public keys:', pubKeys.value);
-  console.log('Challenge bits:', challengeBits.value);
-
-  // Trigger verification after receiving y
-  verification(
-    yValue.value,
-    xValue.value,
-    pubKeys.value,
-    challengeBits.value,
-    BlumInteger.value
-  )
-  console.log('Verification result:', verificationResult.value);
-};
-
-
-const button_x_Received = () => {
-  // Simulate receiving commitment x value
-  commitment_received.value = true;
-  xValue.value = demo_values.x; // Example value
-  receivedCommitmentXMessage.value = 'Received commitment x: ' + xValue.value;
-
-  console.log('Simulated commitment x value:', xValue.value);
-};
-
-
-const button_view_verifcation = () => {
-  console.log('showing verifcation results');
-  // this is jsut a stub for now...
-};
-const button_acknowledge_public_keys = () => {
-  // this is just a stub for now...
-  console.log('Simulated public keys:', pubKeys.value);
-};
 
 function onShowModal(_content, _subtitle) {
   showModal.value = true;
@@ -167,7 +105,6 @@ onMounted(() => {
   });
 
   socket.on('publish_commitment_x', (data) => {
-    receivedCommitmentXMessage.value = 'Received commitment x: ' + data.commitment_x;
     xValue.value = data.commitment_x;
     commitment_received.value = true;
   });
@@ -210,9 +147,6 @@ const handleGetUserInfo = async () => {
     user_info_received.value = true; // Set the flag to true after successfully receiving user info
 
 
-    ///tmp workaround....when i update the flow i will remove the variable
-    public_keys_received.value = true; //
-
   }
   catch (error) {
     console.error('Failed to get the user info', error)
@@ -234,14 +168,6 @@ const isInvalid = computed(() =>
 
 
 const sendResult = () => {
-  // try {
-  //   if (!verificationResult || verificationResult.value  !== 'object') {
-  //     throw new Error('Invalid result format');
-  //   }
-  // } catch (error) {
-  //   console.error('Error sending verification result:', error);
-  //   return;
-  // }
   try {
     console.log('Sending verification result:', verificationResult);
     socket.emit('verification_result', {success: verificationResult.value.success});
@@ -367,25 +293,11 @@ const verification = (y, x, t, c, n) => {
             <button @click="onShowModal(joinedPubKeysNewLines, PublicKeysSubtitle)" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
               <i>show </i>
             </button>
-            <!-- <button @click= "showPublicKeysInfo= true" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
-              <i>show</i>
-            </button>   r -->
             and a Blum Integer 
             <button @click="onShowModal(BlumInteger, BlumIntegerSubtitle)" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
               <i>show </i>
             </button>
           </div>
-
-          <!--
-
-          <div v-if="public_keys_received" class="text-gray-700"> received n public keys</div>
-          <div v-else class="text-gray-700">Waiting for public keys.......</div>
-
-             -->
-
-          <!-- <div class="font-mono text-sm">
-            <p>{{ receivedKeysMessage }}</p>
-          </div> -->
         </div>
 
         <!-- Commitment Section -->
@@ -408,19 +320,6 @@ const verification = (y, x, t, c, n) => {
         <!-- Challenge Generation Section -->
         <div v-if="commitment_received" class="space-y-4">
           <h3 class="font-semibold">Generate challenge</h3>
-
-          <!-- <div class="space-y-3">
-            <label class="flex items-center space-x-2">
-              <input
-                type="radio"
-                name="challengeMode"
-                checked
-                class="h-4 w-4 text-gray-900 focus:ring-gray-500"
-              />
-              <span>Auto-generate challenge</span>
-            </label>
-             -->
-
           <div class="space-y-3">
             <label class="flex items-center space-x-2">
               <input type="radio" v-model="challengeMode" value="auto"
@@ -455,29 +354,6 @@ const verification = (y, x, t, c, n) => {
             </button>
           </div>
 
-          <!-- <label class="flex items-center space-x-2">
-              <input
-                type="radio"
-                name="challengeMode"
-                class="h-4 w-4 text-gray-900 focus:ring-gray-500"
-              />
-              <span>Enter challenge manually</span>
-            </label>
-          </div> -->
-
-          <!-- Manual Challenge Input -->
-          <!-- <div class="flex items-center space-x-2">
-            <input
-              type="text"
-              class="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button
-              class="p-2 border border-gray-300 rounded-full hover:bg-gray-50 transition"
-              @click="() => {}"
-            >
-              →
-            </button>
-          </div> -->
           <div v-if="challenge_sent" class="text-gray-700">
             Challenge sent!
           </div>
@@ -501,25 +377,10 @@ const verification = (y, x, t, c, n) => {
 
         <!-- Verification Result -->
 
-        <!-- <div class="space-y-4 p-4 bg-gray-50 rounded-lg">
-          <h3 class="font-semibold">Verification</h3>
-          <div class="font-mono text-sm space-y-1">
-            <div>y² mod n = xxxxxx</div>
-            <div>x × t₁^c₁ × ... mod n = xxxxxx</div>
-          </div>
-          <div class="flex items-center space-x-2 text-green-600">
-            <span class="text-xl">✓</span>
-            <span class="font-semibold">Verification succeeded!</span>
-          </div>
-        </div> -->
-
         <div v-if="verificationResult" class="space-y-4 p-4 bg-gray-50 rounded-lg">
           <h3 class="font-semibold">Verification</h3>
           <div class="font-mono text-sm space-y-1">
             <div>y² mod n  =     
-              <!-- <button @click= "showySquaredModNInfo= true" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
-                <i>show number</i>
-              </button> -->
               <button @click="onShowModal(verificationResult.ySquaredModN,ySquaredModNSuptitle)" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
                 <i>show number</i>
               </button>
@@ -547,14 +408,6 @@ const verification = (y, x, t, c, n) => {
         <!-- Info text decibing what is happening.... -->
         <div class="space-y-4 p-4 bg-gray-50 rounded-lg border border-black-200">
 
-          <!-- <div>
-          <h3 class="font-semibold">Info</h3>
-          <p class="text-gray-700">
-            This is the verifier view. It waits for the public keys, commitment, and y value from the prover.
-            After receiving these, it generates a challenge and sends it to the prover.
-            Finally, it verifies the response based on the received values.
-          </p>
-        </div>     -->
           <div v-if="public_keys_received && (!commitment_received)" class="text-gray-700">
             <h3 class="font-semibold">Step 2/5 Waiting for commitment</h3>
             <p>With knowledge of the public keys and the Blum Integer, the next step is for the proover to send the commitment</p>
