@@ -22,12 +22,16 @@ const receivedCommitmentXMessage = ref('Commitment, x: xxxx');
 
 
 
-const yValue = ref('Waiting for y...');
-const xValue = ref('');
+const yValue = ref(0);
+const xValue = ref(0);
 const pubKeys = ref([]);
 const joinedPubKeys = computed(() => pubKeys.value.join(', '));
 
-const BlumInteger = ref('');
+const joinedPubKeysNewLines = computed(() => {
+  return pubKeys.value.map((key, index) => `t${index} =\n ${key}`).join('\n\n');
+});
+
+const BlumInteger = ref(0);
 const numberofKeys = ref(0); 
 const challenge_bit_str = ref('');
 const challengeBits = ref([]); 
@@ -75,13 +79,13 @@ const proverName = query.proverName || 'Fallback_Prover'; // Get the username fr
 
 /// For the info popup modal
 
-const showPublicKeysInfo = ref(false);
-const showCommitmentInfo = ref(false);
-const showYInfo = ref(false);
-const showySquaredModNInfo = ref(false);
-const showProductModNInfo = ref(false);
+const BlumIntegerSubtitle = 'The Blum Integer n is:';
+const PublicKeysSubtitle = 'The Provers Public Keys (tᵢ = sᵢ² mod n):';
+const CommitmenSuptitle = 'The Commitment x from the prover:';
+const yValueSubtitle = 'y is:';
+const ySquaredModNSuptitle = 'y² mod n is:';
+const productModNSuptitle = 'x × t₁^c₁ × ... mod n is:';
 
-const BlumIntegerSubtitle = 'Blum Integer n is:';
 
 // proper modal
 const showModal = ref(false)
@@ -360,12 +364,16 @@ const verification = (y, x, t, c, n) => {
         <div class="space-y-2">
           <div v-if="user_info_received" class="font-mono text-sm">
             Using {{ numberofKeys }} public keys                 
-            <button @click= "showPublicKeysInfo= true" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
-              <i>show</i>
-            </button>   and a Blum Integer
-            <button v-if="BlumInteger" @click="onShowModal(BlumInteger, BlumIntegerSubtitle)" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
+            <button @click="onShowModal(joinedPubKeysNewLines, PublicKeysSubtitle)" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
               <i>show </i>
-          </button>
+            </button>
+            <!-- <button @click= "showPublicKeysInfo= true" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
+              <i>show</i>
+            </button>   r -->
+            and a Blum Integer 
+            <button @click="onShowModal(BlumInteger, BlumIntegerSubtitle)" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
+              <i>show </i>
+            </button>
           </div>
 
           <!--
@@ -390,8 +398,8 @@ const verification = (y, x, t, c, n) => {
           </div>
           <div v-if="commitment_received" class="font-mono text-sm">
             received commitment       
-              <button @click= "showCommitmentInfo= true" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
-              <i>show</i>
+            <button @click="onShowModal(xValue, CommitmenSuptitle)" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
+              <i>show </i>
             </button>
           </div>
           <div v-else class="text-gray-700">Waiting for commitment.......</div>
@@ -483,7 +491,7 @@ const verification = (y, x, t, c, n) => {
             </span>
           <div v-if="y_received" class="font-mono text-sm">
             The prover has send the response 
-            <button @click= "showYInfo= true" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
+            <button @click="onShowModal(yValue,yValueSubtitle)" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
               <i>show</i>
             </button>
           </div>
@@ -509,13 +517,16 @@ const verification = (y, x, t, c, n) => {
           <h3 class="font-semibold">Verification</h3>
           <div class="font-mono text-sm space-y-1">
             <div>y² mod n  =     
-              <button @click= "showySquaredModNInfo= true" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
+              <!-- <button @click= "showySquaredModNInfo= true" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
+                <i>show number</i>
+              </button> -->
+              <button @click="onShowModal(verificationResult.ySquaredModN,ySquaredModNSuptitle)" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
                 <i>show number</i>
               </button>
             
             </div>
             <div>x × t₁^c₁ × ... mod n =            
-              <button @click= "showProductModNInfo= true" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
+              <button @click="onShowModal(verificationResult.productModN,productModNSuptitle)" class="bg-transparent hover:bg-green-600 text-green-600 hover:text-white px-2 border border-green-600 hover:border-transparent rounded-full">
                 <i>show number</i>
               </button>
             </div>
@@ -580,114 +591,6 @@ const verification = (y, x, t, c, n) => {
         </div>
 
       </div>
-
-
-
-      
-      <!-- Public Keys Information Modal -->
-      <div v-if="showPublicKeysInfo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg max-w-2xl mx-4 max-h-[80vh] flex flex-col">
-          <!-- Fixed Header -->
-          <div class="flex justify-between items-center p-6 pb-4 border-b">
-            <h3 class="text-lg font-semibold">Information</h3>
-            <button @click="showPublicKeysInfo = false" class="text-gray-500 hover:text-gray-700 text-xl">×</button>
-          </div>
-          <!-- Scrollable Content -->
-          <div class="p-6 pt-4 overflow-y-auto">
-            <div class="space-y-2">
-              <p class="font-medium">The Provers Public Keys (tᵢ = sᵢ² mod n):</p>
-              <div class="font-mono text-sm space-y-1">
-                <div v-for="(pk, index) in pubKeys ">
-                  t{{index}}: {{ pk }}  
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Commitment Modal -->
-      <div v-if="showCommitmentInfo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg max-w-2xl mx-4 max-h-[80vh] flex flex-col">
-          <!-- Fixed Header -->
-          <div class="flex justify-between items-center p-6 pb-4 border-b">
-            <h3 class="text-lg font-semibold">Information</h3>
-            <button @click="showCommitmentInfo = false" class="text-gray-500 hover:text-gray-700 text-xl">×</button>
-          </div>
-          <!-- Scrollable Content -->
-          <div class="p-6 pt-4 overflow-y-auto">
-            <div class="space-y-2">
-              <p class="font-medium">The Commitment from the prover:</p>
-              <div class="font-mono text-sm space-y-1 break-all">
-                x: {{ xValue }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Y  Modal -->
-      <div v-if="showYInfo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg max-w-2xl mx-4 max-h-[80vh] flex flex-col">
-          <!-- Fixed Header -->
-          <div class="flex justify-between items-center p-6 pb-4 border-b">
-            <h3 class="text-lg font-semibold">Information</h3>
-            <button @click="showYInfo = false" class="text-gray-500 hover:text-gray-700 text-xl">×</button>
-          </div>
-          <!-- Scrollable Content -->
-          <div class="p-6 pt-4 overflow-y-auto">
-            <div class="space-y-2">
-              <p class="font-medium"> y</p>
-              <div class="font-mono text-sm space-y-1 break-all">
-                y {{ yValue }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
-      <!-- productModNInfo Modal -->
-      <div v-if="showProductModNInfo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg max-w-2xl mx-4 max-h-[80vh] flex flex-col">
-          <!-- Fixed Header -->
-          <div class="flex justify-between items-center p-6 pb-4 border-b">
-            <h3 class="text-lg font-semibold">Information</h3>
-            <button @click="showProductModNInfo = false" class="text-gray-500 hover:text-gray-700 text-xl">×</button>
-          </div>
-          <!-- Scrollable Content -->
-          <div class="p-6 pt-4 overflow-y-auto">
-            <div class="space-y-2">
-              <p class="font-medium"> x × t₁^c₁ × ... mod n:  </p>
-              <div class="font-mono text-sm space-y-1 break-all">
-                {{ verificationResult.productModN }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
-      <!-- y^2 mod n  Modal -->
-      <div v-if="showySquaredModNInfo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg max-w-2xl mx-4 max-h-[80vh] flex flex-col">
-          <!-- Fixed Header -->
-          <div class="flex justify-between items-center p-6 pb-4 border-b">
-            <h3 class="text-lg font-semibold">Information</h3>
-            <button @click="showySquaredModNInfo = false" class="text-gray-500 hover:text-gray-700 text-xl">×</button>
-          </div>
-          <!-- Scrollable Content -->
-          <div class="p-6 pt-4 overflow-y-auto">
-            <div class="space-y-2">
-              <p class="font-medium">y² mod n : :</p>
-              <div class="font-mono text-sm space-y-1 break-all">
-                y² mod n : {{ verificationResult.ySquaredModN }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
     <!-- Modal -->
     <InfoModal :visible="showModal" @close="showModal = false" :content="content" :subtitle="modalSubtitle"/>
 
